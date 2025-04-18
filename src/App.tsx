@@ -14,6 +14,8 @@ import UserDashboard from "./pages/UserDashboard";
 import ScrapperDashboard from "./pages/ScrapperDashboard";
 import FAQPage from "./pages/FAQPage";
 import ContactPage from "./pages/ContactPage";
+import UserProfilePage from "./pages/UserProfilePage";
+import ScrapperProfilePage from "./pages/ScrapperProfilePage";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +35,8 @@ const App = () => (
           <Route path="/scrapper-dashboard" element={<ScrapperDashboard />} />
           <Route path="/faq" element={<FAQPage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/profile" element={<UserProfilePage />} />
+          <Route path="/scrapper-profile" element={<ScrapperProfilePage />} />
           
           {/* 404 catch-all route */}
           <Route path="*" element={<NotFound />} />
