@@ -2,6 +2,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Leaf } from 'lucide-react';
+import { toast } from 'sonner';
 
 const PointsSection = () => {
   const mockPoints = 150;
@@ -15,6 +16,10 @@ const PointsSection = () => {
     { points: 100, reward: "₹100 off next pickup" },
     { points: 200, reward: "Free pickup (up to 20kg)" }
   ];
+
+  const handleRedeem = (points: number, reward: string) => {
+    toast.success(`Redeemed: ${reward}`);
+  };
 
   return (
     <div className="space-y-6">
@@ -37,6 +42,7 @@ const PointsSection = () => {
               <Button
                 variant="outline"
                 disabled={mockPoints < option.points}
+                onClick={() => handleRedeem(option.points, option.reward)}
               >
                 Redeem
               </Button>
@@ -54,6 +60,7 @@ const PointsSection = () => {
           <div>
             <p className="text-2xl font-semibold text-green-700">{mockImpact.trees}</p>
             <p className="text-sm text-gray-600">Trees Saved</p>
+            <p className="text-xs text-gray-500">(1 tree per 25kg)</p>
           </div>
           <div>
             <p className="text-2xl font-semibold text-green-700">{mockImpact.kgRecycled}kg</p>
