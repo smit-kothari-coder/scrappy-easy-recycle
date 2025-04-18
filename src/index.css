@@ -4,6 +4,9 @@
 
 @layer base {
   :root {
+    /* Custom ScrapEasy base styling */
+    font-size: 16px;
+    
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
 
@@ -13,24 +16,26 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary is now Green (#28a745) */
+    --primary: 134 61% 41%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Secondary is now Blue (#007bff) */
+    --secondary: 211 100% 50%;
+    --secondary-foreground: 0 0% 100%;
 
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 134 61% 95%;
+    --accent-foreground: 134 61% 41%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --ring: 134 61% 41%;
 
     --radius: 0.5rem;
 
@@ -97,5 +102,43 @@
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .scrap-container {
+    @apply max-w-[600px] w-full mx-auto px-4 sm:px-6;
+  }
+
+  .scrap-heading {
+    @apply text-3xl sm:text-4xl font-bold mb-6 text-center;
+  }
+  
+  .scrap-btn-primary {
+    @apply bg-scrap-green text-white py-3 px-6 rounded-lg text-lg font-medium hover:bg-scrap-green/90 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-scrap-green focus:ring-offset-2 w-full sm:w-auto;
+  }
+  
+  .scrap-btn-secondary {
+    @apply bg-scrap-blue text-white py-3 px-6 rounded-lg text-lg font-medium hover:bg-scrap-blue/90 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-scrap-blue focus:ring-offset-2 w-full sm:w-auto;
+  }
+  
+  .scrap-input {
+    @apply w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-scrap-green focus:border-transparent text-base;
+  }
+  
+  .scrap-label {
+    @apply block text-base font-medium mb-1;
+  }
+  
+  .scrap-card {
+    @apply bg-white p-6 rounded-lg shadow-md border border-gray-200;
+  }
+  
+  .scrap-error {
+    @apply text-red-500 text-sm mt-1;
+  }
+  
+  .scrap-success {
+    @apply text-scrap-green text-sm mt-1;
   }
 }

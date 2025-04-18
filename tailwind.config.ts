@@ -19,6 +19,13 @@ export default {
 		},
 		extend: {
 			colors: {
+				// ScrapEasy custom colors
+				'scrap-green': '#28a745',
+				'scrap-blue': '#007bff',
+				'scrap-light-green': '#e8f5e9',
+				'scrap-light-blue': '#e3f2fd',
+				
+				// Default shadcn colors
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
