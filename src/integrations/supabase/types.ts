@@ -9,13 +9,231 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      pickups: {
+        Row: {
+          address: string
+          created_at: string | null
+          date: string
+          id: string
+          price: number
+          scrapper_id: string | null
+          status: string | null
+          time_slot: string
+          type: string
+          updated_at: string | null
+          user_id: string | null
+          weight: number
+        }
+        Insert: {
+          address: string
+          created_at?: string | null
+          date: string
+          id?: string
+          price: number
+          scrapper_id?: string | null
+          status?: string | null
+          time_slot: string
+          type: string
+          updated_at?: string | null
+          user_id?: string | null
+          weight: number
+        }
+        Update: {
+          address?: string
+          created_at?: string | null
+          date?: string
+          id?: string
+          price?: number
+          scrapper_id?: string | null
+          status?: string | null
+          time_slot?: string
+          type?: string
+          updated_at?: string | null
+          user_id?: string | null
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pickups_scrapper_id_fkey"
+            columns: ["scrapper_id"]
+            isOneToOne: false
+            referencedRelation: "scrappers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      points: {
+        Row: {
+          created_at: string | null
+          id: string
+          pickup_id: string | null
+          points: number
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          pickup_id?: string | null
+          points: number
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          pickup_id?: string | null
+          points?: number
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "points_pickup_id_fkey"
+            columns: ["pickup_id"]
+            isOneToOne: false
+            referencedRelation: "pickups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          address: string | null
+          city: string | null
+          created_at: string | null
+          email: string
+          id: string
+          name: string
+          phone: string | null
+          user_id: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          created_at?: string | null
+          email: string
+          id?: string
+          name: string
+          phone?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          created_at?: string | null
+          email?: string
+          id?: string
+          name?: string
+          phone?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      redeemed_rewards: {
+        Row: {
+          created_at: string | null
+          id: string
+          reward_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          reward_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          reward_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "redeemed_rewards_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "rewards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rewards: {
+        Row: {
+          active: boolean | null
+          description: string | null
+          id: string
+          name: string
+          points_required: number
+        }
+        Insert: {
+          active?: boolean | null
+          description?: string | null
+          id?: string
+          name: string
+          points_required: number
+        }
+        Update: {
+          active?: boolean | null
+          description?: string | null
+          id?: string
+          name?: string
+          points_required?: number
+        }
+        Relationships: []
+      }
+      scrappers: {
+        Row: {
+          availability_hours: Json | null
+          available: boolean | null
+          city: string
+          created_at: string | null
+          email: string
+          id: string
+          latitude: number | null
+          longitude: number | null
+          name: string
+          phone: string
+          rating: number | null
+          vehicle_type: string | null
+        }
+        Insert: {
+          availability_hours?: Json | null
+          available?: boolean | null
+          city: string
+          created_at?: string | null
+          email: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          name: string
+          phone: string
+          rating?: number | null
+          vehicle_type?: string | null
+        }
+        Update: {
+          availability_hours?: Json | null
+          available?: boolean | null
+          city?: string
+          created_at?: string | null
+          email?: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          name?: string
+          phone?: string
+          rating?: number | null
+          vehicle_type?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_price: {
+        Args: { weight: number; type: string }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never

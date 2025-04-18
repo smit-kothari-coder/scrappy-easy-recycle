@@ -16,6 +16,7 @@ import FAQPage from "./pages/FAQPage";
 import ContactPage from "./pages/ContactPage";
 import UserProfilePage from "./pages/UserProfilePage";
 import ScrapperProfilePage from "./pages/ScrapperProfilePage";
+import "./styles/scrap.css";
 
 const queryClient = new QueryClient();
 

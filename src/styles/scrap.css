@@ -1,0 +1,38 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .scrap-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .scrap-card {
+    @apply bg-white shadow rounded-lg p-6;
+  }
+
+  .scrap-heading {
+    @apply text-2xl font-bold text-gray-900 mb-6;
+  }
+
+  .scrap-label {
+    @apply block text-sm font-medium text-gray-700 mb-1;
+  }
+
+  .scrap-input {
+    @apply w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+  }
+
+  .scrap-btn-primary {
+    @apply w-full py-2 px-4 bg-green-600 text-white font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors;
+  }
+
+  .scrap-btn-secondary {
+    @apply w-full py-2 px-4 bg-white text-gray-700 font-medium rounded-md border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors;
+  }
+
+  .scrap-error {
+    @apply text-sm text-red-600 mt-1;
+  }
+}
