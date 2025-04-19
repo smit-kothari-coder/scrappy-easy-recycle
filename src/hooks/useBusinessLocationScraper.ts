@@ -3,12 +3,14 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-interface BusinessLocation {
+export interface BusinessLocation {
+  id: string;
   name: string;
   address: string;
-  summary: string;
+  summary: string | null;
   latitude: number;
   longitude: number;
+  created_at?: string;
 }
 
 export const useBusinessLocationScraper = () => {
@@ -18,22 +20,21 @@ export const useBusinessLocationScraper = () => {
   const scrapeBusinessLocation = async (url: string) => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('scrape-business-locations', {
+      const { data: scrapedData, error } = await supabase.functions.invoke('scrape-business-locations', {
         body: JSON.stringify({ url })
       });
 
       if (error) throw error;
 
-      // Store in Supabase using a type assertion since we know the table exists
-      // @ts-ignore - Ignoring type error since the table exists in our database
       const { data: newLocation, error: insertError } = await supabase
         .from('business_locations')
-        .insert(data)
-        .select();
+        .insert(scrapedData)
+        .select()
+        .single();
 
       if (insertError) throw insertError;
 
-      setLocations(prev => [...prev, newLocation[0]]);
+      setLocations(prev => [...prev, newLocation as BusinessLocation]);
       toast.success('Business location scraped successfully!');
     } catch (error) {
       console.error('Scraping error:', error);

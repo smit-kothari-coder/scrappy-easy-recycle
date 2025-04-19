@@ -15,30 +15,20 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-interface BusinessLocation {
-  name: string;
-  address: string;
-  summary: string;
-  latitude: number;
-  longitude: number;
-}
-
 const BusinessLocationScraper = () => {
   const [url, setUrl] = useState('');
   const { scrapeBusinessLocation, locations, isLoading } = useBusinessLocationScraper();
-  const [mapKey, setMapKey] = useState(0); // For forcing map re-render
+  const [mapKey, setMapKey] = useState(0);
 
   const handleScrape = () => {
     scrapeBusinessLocation(url);
   };
 
-  // Default center position for the map or the latest location
   const defaultPosition: [number, number] = [51.505, -0.09]; // London as default
-  const mapCenter = locations.length 
-    ? [locations[locations.length - 1].latitude, locations[locations.length - 1].longitude] 
+  const mapCenter = locations.length > 0
+    ? [locations[locations.length - 1].latitude, locations[locations.length - 1].longitude] as [number, number]
     : defaultPosition;
     
-  // Force map to re-render when locations change
   useEffect(() => {
     if (locations.length > 0) {
       setMapKey(prev => prev + 1);
@@ -59,28 +49,28 @@ const BusinessLocationScraper = () => {
       </div>
 
       <div key={mapKey} className="w-full h-[400px]">
-        {/* @ts-ignore - Ignoring type issues with MapContainer props */}
+        {/* @ts-ignore - Known issue with react-leaflet types */}
         <MapContainer 
           center={mapCenter}
           zoom={locations.length ? 13 : 2} 
           style={{ height: '400px', width: '100%' }}
-          className="w-full"
+          className="w-full h-full"
         >
-          {/* @ts-ignore - Ignoring type issues with TileLayer props */}
+          {/* @ts-ignore - Known issue with react-leaflet types */}
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
-          {locations.map((location, index) => (
-            /* @ts-ignore - Ignoring type issues with Marker props */
+          {locations.map((location) => (
+            /* @ts-ignore - Known issue with react-leaflet types */
             <Marker 
-              key={index} 
+              key={location.id}
               position={[location.latitude, location.longitude]}
             >
               <Popup>
                 <div>
                   <strong>{location.name}</strong>
-                  <p>{location.summary}</p>
+                  <p>{location.summary || ''}</p>
                   <small>{location.address}</small>
                 </div>
               </Popup>

@@ -1,4 +1,3 @@
-
 export type Scrapper = {
   id: string;
   name: string;
@@ -61,4 +60,39 @@ export type RedeemedReward = {
   user_id: string;
   reward_id: string;
   created_at: string;
+};
+
+// Update Scrapper type to match database schema
+export type Scrapper = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  city: string;
+  vehicle_type: string | null;
+  availability_hours: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  available: boolean;
+  rating: number;
+  created_at: string;
+};
+
+// Update Pickup type to match database schema
+export type Pickup = {
+  id: string;
+  user_id: string;
+  scrapper_id: string | null;
+  weight: number;
+  type: 'Metal' | 'Paper' | 'Plastic';
+  address: string;
+  time_slot: string;
+  date: string;
+  price: number;
+  status: 'Requested' | 'Scheduled' | 'En Route' | 'Arrived' | 'Completed' | 'Rejected';
+  latitude: number | null;
+  longitude: number | null;
+  created_at: string;
+  updated_at: string;
+  pickup_time: string;
 };
