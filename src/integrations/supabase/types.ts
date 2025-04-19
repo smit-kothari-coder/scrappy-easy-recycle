@@ -9,39 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      business_locations: {
-        Row: {
-          address: string
-          created_at: string
-          description: string | null
-          id: string
-          latitude: number | null
-          longitude: number | null
-          name: string
-          summary: string | null
-        }
-        Insert: {
-          address: string
-          created_at?: string
-          description?: string | null
-          id?: string
-          latitude?: number | null
-          longitude?: number | null
-          name: string
-          summary?: string | null
-        }
-        Update: {
-          address?: string
-          created_at?: string
-          description?: string | null
-          id?: string
-          latitude?: number | null
-          longitude?: number | null
-          name?: string
-          summary?: string | null
-        }
-        Relationships: []
-      }
       pickups: {
         Row: {
           address: string
@@ -85,15 +52,7 @@ export type Database = {
           user_id?: string | null
           weight?: number
         }
-        Relationships: [
-          {
-            foreignKeyName: "pickups_scrapper_id_fkey"
-            columns: ["scrapper_id"]
-            isOneToOne: false
-            referencedRelation: "scrappers"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       points: {
         Row: {
@@ -157,104 +116,6 @@ export type Database = {
           name?: string
           phone?: string | null
           user_id?: string | null
-        }
-        Relationships: []
-      }
-      redeemed_rewards: {
-        Row: {
-          created_at: string | null
-          id: string
-          reward_id: string | null
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          reward_id?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          reward_id?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "redeemed_rewards_reward_id_fkey"
-            columns: ["reward_id"]
-            isOneToOne: false
-            referencedRelation: "rewards"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      rewards: {
-        Row: {
-          active: boolean | null
-          description: string | null
-          id: string
-          name: string
-          points_required: number
-        }
-        Insert: {
-          active?: boolean | null
-          description?: string | null
-          id?: string
-          name: string
-          points_required: number
-        }
-        Update: {
-          active?: boolean | null
-          description?: string | null
-          id?: string
-          name?: string
-          points_required?: number
-        }
-        Relationships: []
-      }
-      scrappers: {
-        Row: {
-          availability_hours: Json | null
-          available: boolean | null
-          city: string
-          created_at: string | null
-          email: string
-          id: string
-          latitude: number | null
-          longitude: number | null
-          name: string
-          phone: string
-          rating: number | null
-          vehicle_type: string | null
-        }
-        Insert: {
-          availability_hours?: Json | null
-          available?: boolean | null
-          city: string
-          created_at?: string | null
-          email: string
-          id?: string
-          latitude?: number | null
-          longitude?: number | null
-          name: string
-          phone: string
-          rating?: number | null
-          vehicle_type?: string | null
-        }
-        Update: {
-          availability_hours?: Json | null
-          available?: boolean | null
-          city?: string
-          created_at?: string | null
-          email?: string
-          id?: string
-          latitude?: number | null
-          longitude?: number | null
-          name?: string
-          phone?: string
-          rating?: number | null
-          vehicle_type?: string | null
         }
         Relationships: []
       }
