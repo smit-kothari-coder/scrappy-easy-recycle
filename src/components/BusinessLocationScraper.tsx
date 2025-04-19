@@ -23,8 +23,11 @@ const BusinessLocationScraper = () => {
     scrapeBusinessLocation(url);
   };
 
-  const centerLat = locations.length ? locations[locations.length - 1].latitude : 0;
-  const centerLng = locations.length ? locations[locations.length - 1].longitude : 0;
+  // Default center position for the map or the latest location
+  const defaultPosition: [number, number] = [51.505, -0.09]; // London as default
+  const position: [number, number] = locations.length 
+    ? [locations[locations.length - 1].latitude, locations[locations.length - 1].longitude] 
+    : defaultPosition;
 
   return (
     <div className="space-y-4">
@@ -40,7 +43,7 @@ const BusinessLocationScraper = () => {
       </div>
 
       <MapContainer 
-        center={[centerLat, centerLng]} 
+        center={position} 
         zoom={locations.length ? 13 : 2} 
         style={{ height: '400px' }}
         className="w-full"
@@ -50,7 +53,10 @@ const BusinessLocationScraper = () => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         {locations.map((location, index) => (
-          <Marker key={index} position={[location.latitude, location.longitude]}>
+          <Marker 
+            key={index} 
+            position={[location.latitude, location.longitude] as [number, number]}
+          >
             <Popup>
               <div>
                 <strong>{location.name}</strong>
