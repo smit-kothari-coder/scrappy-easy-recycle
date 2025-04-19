@@ -78,7 +78,9 @@ export const useSupabase = () => {
       .eq('status', 'Requested');
     
     if (error) throw error;
-    return data as (Pickup & { profiles: { name: string; phone: string } })[];
+    
+    // Use explicit type assertion to handle the join result
+    return (data as unknown) as (Pickup & { profiles: { name: string; phone: string } })[];
   }, []);
 
   const acceptPickup = useCallback(async (pickupId: string, scraperId: string) => {
@@ -93,7 +95,9 @@ export const useSupabase = () => {
       .single();
     
     if (error) throw error;
-    return data as (Pickup & { profiles: { name: string; phone: string } });
+    
+    // Use explicit type assertion to handle the join result
+    return (data as unknown) as (Pickup & { profiles: { name: string; phone: string } });
   }, []);
 
   const rejectPickup = useCallback(async (pickupId: string) => {
@@ -127,7 +131,9 @@ export const useSupabase = () => {
       .single();
     
     if (error && error.code !== 'PGRST116') throw error;
-    return data as (Pickup & { profiles: { name: string; phone: string } }) | null;
+    
+    // Use explicit type assertion to handle the join result and the null case
+    return data ? ((data as unknown) as (Pickup & { profiles: { name: string; phone: string } })) : null;
   }, []);
 
   return {
