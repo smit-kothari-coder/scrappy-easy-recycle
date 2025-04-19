@@ -25,7 +25,7 @@ const BusinessLocationScraper = () => {
 
   // Default center position for the map or the latest location
   const defaultPosition: [number, number] = [51.505, -0.09]; // London as default
-  const position: [number, number] = locations.length 
+  const mapCenter = locations.length 
     ? [locations[locations.length - 1].latitude, locations[locations.length - 1].longitude] 
     : defaultPosition;
 
@@ -43,19 +43,19 @@ const BusinessLocationScraper = () => {
       </div>
 
       <MapContainer 
-        center={position} 
+        center={mapCenter as any} 
         zoom={locations.length ? 13 : 2} 
         style={{ height: '400px' }}
         className="w-full"
       >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' as any
         />
         {locations.map((location, index) => (
           <Marker 
             key={index} 
-            position={[location.latitude, location.longitude] as [number, number]}
+            position={[location.latitude, location.longitude] as any}
           >
             <Popup>
               <div>
