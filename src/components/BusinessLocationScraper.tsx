@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useBusinessLocationScraper } from '@/hooks/useBusinessLocationScraper';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, MapContainerProps } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
@@ -14,6 +14,14 @@ L.Icon.Default.mergeOptions({
   iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
+
+// Define props with proper types
+interface ExtendedMapContainerProps extends MapContainerProps {
+  center: L.LatLngExpression;
+  zoom: number;
+  style?: React.CSSProperties;
+  className?: string;
+}
 
 const BusinessLocationScraper: React.FC = () => {
   const [url, setUrl] = useState('');
@@ -50,25 +58,22 @@ const BusinessLocationScraper: React.FC = () => {
       </div>
 
       <div key={mapKey} className="w-full h-[400px]">
-        {/* @ts-ignore - Ignore TypeScript errors for react-leaflet props */}
         <MapContainer 
           center={mapCenter}
           zoom={locations.length ? 13 : 2} 
           style={{ height: '400px', width: '100%' }}
           className="w-full h-full rounded-lg"
+          {...{} as ExtendedMapContainerProps}
         >
-          {/* @ts-ignore - Ignore TypeScript errors for react-leaflet props */}
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
           {locations.map((location) => (
-            // @ts-ignore - Ignore TypeScript errors for react-leaflet props
             <Marker 
               key={location.id}
               position={[location.latitude, location.longitude]}
             >
-              {/* @ts-ignore - Ignore TypeScript errors for react-leaflet props */}
               <Popup>
                 <div>
                   <strong>{location.name}</strong>

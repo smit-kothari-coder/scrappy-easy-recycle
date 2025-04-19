@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, MapContainerProps } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { useSupabase } from '@/hooks/useSupabase';
@@ -13,6 +13,14 @@ L.Icon.Default.mergeOptions({
   iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
+
+// Define props with proper types
+interface ExtendedMapContainerProps extends MapContainerProps {
+  center: L.LatLngExpression;
+  zoom: number;
+  style?: React.CSSProperties;
+  className?: string;
+}
 
 const ScrapperMap: React.FC = () => {
   const [scrappers, setScrappers] = useState<Scrapper[]>([]);
@@ -43,14 +51,13 @@ const ScrapperMap: React.FC = () => {
   
   return (
     <div className="w-full h-[400px]">
-      {/* @ts-ignore - Ignore TypeScript errors for react-leaflet props */}
       <MapContainer 
         center={defaultPosition}
         zoom={5}
         style={{ height: '400px', width: '100%' }}
         className="w-full h-full rounded-lg"
+        {...{} as ExtendedMapContainerProps}
       >
-        {/* @ts-ignore - Ignore TypeScript errors for react-leaflet props */}
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -58,12 +65,10 @@ const ScrapperMap: React.FC = () => {
         
         {scrappers.map((scrapper) => (
           scrapper.latitude && scrapper.longitude ? (
-            // @ts-ignore - Ignore TypeScript errors for react-leaflet props
             <Marker 
               key={scrapper.id}
               position={[scrapper.latitude, scrapper.longitude]}
             >
-              {/* @ts-ignore - Ignore TypeScript errors for react-leaflet props */}
               <Popup>
                 <div>
                   <strong className="text-base">{scrapper.name}</strong>
