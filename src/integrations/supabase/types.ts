@@ -9,50 +9,110 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      notifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string
+          scrapper_id: string | null
+          status: string | null
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id: string
+          message: string
+          scrapper_id?: string | null
+          status?: string | null
+          type: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string
+          scrapper_id?: string | null
+          status?: string | null
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_scrapper_id_fkey"
+            columns: ["scrapper_id"]
+            isOneToOne: false
+            referencedRelation: "scrappers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pickups: {
         Row: {
           address: string
           created_at: string | null
-          date: string
           id: string
-          price: number
+          latitude: number | null
+          longitude: number | null
+          pickup_time: string
+          price: number | null
           scrapper_id: string | null
           status: string | null
-          time_slot: string
           type: string
-          updated_at: string | null
           user_id: string | null
           weight: number
         }
         Insert: {
           address: string
           created_at?: string | null
-          date: string
-          id?: string
-          price: number
+          id: string
+          latitude?: number | null
+          longitude?: number | null
+          pickup_time: string
+          price?: number | null
           scrapper_id?: string | null
           status?: string | null
-          time_slot: string
           type: string
-          updated_at?: string | null
           user_id?: string | null
           weight: number
         }
         Update: {
           address?: string
           created_at?: string | null
-          date?: string
           id?: string
-          price?: number
+          latitude?: number | null
+          longitude?: number | null
+          pickup_time?: string
+          price?: number | null
           scrapper_id?: string | null
           status?: string | null
-          time_slot?: string
           type?: string
-          updated_at?: string | null
           user_id?: string | null
           weight?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "pickups_scrapper_id_fkey"
+            columns: ["scrapper_id"]
+            isOneToOne: false
+            referencedRelation: "scrappers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pickups_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       points: {
         Row: {
@@ -64,7 +124,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
-          id?: string
+          id: string
           pickup_id?: string | null
           points: number
           user_id?: string | null
@@ -84,38 +144,129 @@ export type Database = {
             referencedRelation: "pickups"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "points_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
         ]
       }
-      profiles: {
+      pricing: {
+        Row: {
+          id: string
+          price_per_kg: number
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          id: string
+          price_per_kg: number
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          price_per_kg?: number
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      scrappers: {
+        Row: {
+          availability_hours: string | null
+          available: boolean | null
+          city: string
+          created_at: string | null
+          email: string
+          id: string
+          latitude: number | null
+          longitude: number | null
+          name: string
+          phone: string
+          vehicle_type: string | null
+        }
+        Insert: {
+          availability_hours?: string | null
+          available?: boolean | null
+          city: string
+          created_at?: string | null
+          email: string
+          id: string
+          latitude?: number | null
+          longitude?: number | null
+          name: string
+          phone: string
+          vehicle_type?: string | null
+        }
+        Update: {
+          availability_hours?: string | null
+          available?: boolean | null
+          city?: string
+          created_at?: string | null
+          email?: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          name?: string
+          phone?: string
+          vehicle_type?: string | null
+        }
+        Relationships: []
+      }
+      support_requests: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          message: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id: string
+          message: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      users: {
         Row: {
           address: string | null
-          city: string | null
+          city: string
           created_at: string | null
           email: string
           id: string
           name: string
-          phone: string | null
-          user_id: string | null
+          phone: string
         }
         Insert: {
           address?: string | null
-          city?: string | null
+          city: string
           created_at?: string | null
           email: string
-          id?: string
+          id: string
           name: string
-          phone?: string | null
-          user_id?: string | null
+          phone: string
         }
         Update: {
           address?: string | null
-          city?: string | null
+          city?: string
           created_at?: string | null
           email?: string
           id?: string
           name?: string
-          phone?: string | null
-          user_id?: string | null
+          phone?: string
         }
         Relationships: []
       }
