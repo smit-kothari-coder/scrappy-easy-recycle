@@ -101,11 +101,11 @@ const SignUpPage = () => {
 
   return (
     <div className="min-h-screen py-8 px-4 bg-gray-50">
-      <div className="scrap-container">
+      <div className="scrap-container max-w-[600px] mx-auto">
         <AuthHeader />
         
         <div className="scrap-card">
-          <h1 className="scrap-heading text-center mb-6">
+          <h1 className="scrap-heading text-center mb-6 text-2xl md:text-3xl">
             Create Your Account
           </h1>
 
@@ -137,11 +137,11 @@ const SignUpPage = () => {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="scrap-label">Full Name</FormLabel>
+                    <FormLabel className="scrap-label text-base">Full Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter your name" className="scrap-input" {...field} />
+                      <Input placeholder="Enter your name" className="scrap-input text-base py-2" {...field} />
                     </FormControl>
-                    <FormMessage className="scrap-error" />
+                    <FormMessage className="scrap-error text-base" />
                   </FormItem>
                 )}
               />
@@ -151,11 +151,11 @@ const SignUpPage = () => {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="scrap-label">Email Address</FormLabel>
+                    <FormLabel className="scrap-label text-base">Email Address</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder="Enter your email" className="scrap-input" {...field} />
+                      <Input type="email" placeholder="Enter your email" className="scrap-input text-base py-2" {...field} />
                     </FormControl>
-                    <FormMessage className="scrap-error" />
+                    <FormMessage className="scrap-error text-base" />
                   </FormItem>
                 )}
               />
@@ -165,11 +165,11 @@ const SignUpPage = () => {
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="scrap-label">Phone Number</FormLabel>
+                    <FormLabel className="scrap-label text-base">Phone Number</FormLabel>
                     <FormControl>
-                      <Input placeholder="10-digit mobile number" className="scrap-input" {...field} />
+                      <Input placeholder="10-digit mobile number" className="scrap-input text-base py-2" {...field} />
                     </FormControl>
-                    <FormMessage className="scrap-error" />
+                    <FormMessage className="scrap-error text-base" />
                   </FormItem>
                 )}
               />
@@ -179,13 +179,13 @@ const SignUpPage = () => {
                 name="city"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="scrap-label">City</FormLabel>
+                    <FormLabel className="scrap-label text-base">City</FormLabel>
                     <Select 
                       onValueChange={field.onChange} 
                       defaultValue={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger className="scrap-input">
+                        <SelectTrigger className="scrap-input text-base py-2">
                           <SelectValue placeholder="Select your city" />
                         </SelectTrigger>
                       </FormControl>
@@ -195,7 +195,7 @@ const SignUpPage = () => {
                         ))}
                       </SelectContent>
                     </Select>
-                    <FormMessage className="scrap-error" />
+                    <FormMessage className="scrap-error text-base" />
                   </FormItem>
                 )}
               />
@@ -207,13 +207,13 @@ const SignUpPage = () => {
                     name="vehicleType"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="scrap-label">Vehicle Type</FormLabel>
+                        <FormLabel className="scrap-label text-base">Vehicle Type</FormLabel>
                         <Select 
                           onValueChange={field.onChange} 
                           defaultValue={field.value}
                         >
                           <FormControl>
-                            <SelectTrigger className="scrap-input">
+                            <SelectTrigger className="scrap-input text-base py-2">
                               <SelectValue placeholder="Select your vehicle" />
                             </SelectTrigger>
                           </FormControl>
@@ -223,7 +223,7 @@ const SignUpPage = () => {
                             ))}
                           </SelectContent>
                         </Select>
-                        <FormMessage className="scrap-error" />
+                        <FormMessage className="scrap-error text-base" />
                       </FormItem>
                     )}
                   />
@@ -233,11 +233,11 @@ const SignUpPage = () => {
                     name="workingHours"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="scrap-label">Working Hours</FormLabel>
+                        <FormLabel className="scrap-label text-base">Working Hours</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g., 9 AM - 6 PM" className="scrap-input" {...field} />
+                          <Input placeholder="e.g., 9 AM - 6 PM" className="scrap-input text-base py-2" {...field} />
                         </FormControl>
-                        <FormMessage className="scrap-error" />
+                        <FormMessage className="scrap-error text-base" />
                       </FormItem>
                     )}
                   />
@@ -249,11 +249,11 @@ const SignUpPage = () => {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="scrap-label">Password</FormLabel>
+                    <FormLabel className="scrap-label text-base">Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="Create a password" className="scrap-input" {...field} />
+                      <Input type="password" placeholder="Create a password" className="scrap-input text-base py-2" {...field} />
                     </FormControl>
-                    <FormMessage className="scrap-error" />
+                    <FormMessage className="scrap-error text-base" />
                   </FormItem>
                 )}
               />
@@ -263,18 +263,18 @@ const SignUpPage = () => {
                 name="confirmPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="scrap-label">Confirm Password</FormLabel>
+                    <FormLabel className="scrap-label text-base">Confirm Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="Confirm your password" className="scrap-input" {...field} />
+                      <Input type="password" placeholder="Confirm your password" className="scrap-input text-base py-2" {...field} />
                     </FormControl>
-                    <FormMessage className="scrap-error" />
+                    <FormMessage className="scrap-error text-base" />
                   </FormItem>
                 )}
               />
               
               <Button 
                 type="submit" 
-                className="w-full scrap-btn-primary mt-6"
+                className="w-full scrap-btn-primary mt-6 text-lg py-3"
                 disabled={form.formState.isSubmitting}
               >
                 {form.formState.isSubmitting ? 'Creating Account...' : 'Create Account'}
@@ -282,7 +282,7 @@ const SignUpPage = () => {
             </form>
           </Form>
           
-          <p className="mt-6 text-center text-gray-600">
+          <p className="mt-6 text-center text-gray-600 text-base">
             Already have an account?{' '}
             <Link to="/signin" className="text-scrap-blue hover:underline font-medium">
               Sign In

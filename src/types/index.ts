@@ -1,17 +1,3 @@
-export type Scrapper = {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  city: string;
-  vehicle_type: string | null;
-  availability_hours: Record<string, string>;
-  latitude: number | null;
-  longitude: number | null;
-  available: boolean;
-  rating: number;
-  created_at: string;
-};
 
 export type Profile = {
   id: string;
@@ -22,21 +8,6 @@ export type Profile = {
   address: string | null;
   city: string | null;
   created_at: string;
-};
-
-export type Pickup = {
-  id: string;
-  user_id: string;
-  scrapper_id: string | null;
-  weight: number;
-  type: 'Metal' | 'Paper' | 'Plastic';
-  address: string;
-  time_slot: string;
-  date: string;
-  price: number;
-  status: 'Requested' | 'Scheduled' | 'En Route' | 'Arrived' | 'Completed' | 'Rejected';
-  created_at: string;
-  updated_at: string;
 };
 
 export type Points = {
@@ -62,7 +33,6 @@ export type RedeemedReward = {
   created_at: string;
 };
 
-// Update Scrapper type to match database schema
 export type Scrapper = {
   id: string;
   name: string;
@@ -78,7 +48,6 @@ export type Scrapper = {
   created_at: string;
 };
 
-// Update Pickup type to match database schema
 export type Pickup = {
   id: string;
   user_id: string;
@@ -95,4 +64,14 @@ export type Pickup = {
   created_at: string;
   updated_at: string;
   pickup_time: string;
+};
+
+export type BusinessLocation = {
+  id: string;
+  name: string;
+  address: string;
+  summary: string | null;
+  latitude: number;
+  longitude: number;
+  created_at?: string;
 };

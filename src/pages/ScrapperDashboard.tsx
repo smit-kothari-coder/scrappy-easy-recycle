@@ -17,6 +17,7 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSupabase } from '@/hooks/useSupabase';
 import type { Pickup, Scrapper } from '@/types';
+import LogoutButton from '@/components/LogoutButton';
 
 // Mock scrapper data for demo purposes
 const mockScrapperId = "1";
@@ -146,35 +147,36 @@ const ScrapperDashboard = () => {
   
   return (
     <div className="min-h-screen p-6 bg-gray-50">
-      <div className="scrap-container">
-        <h1 className="scrap-heading">Scrapper Dashboard</h1>
+      <div className="scrap-container max-w-[600px] mx-auto">
+        <h1 className="scrap-heading text-2xl md:text-3xl">Scrapper Dashboard</h1>
         
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
           <div className="flex items-center gap-2">
-            <p className="font-medium">Availability:</p>
+            <p className="font-medium text-base">Availability:</p>
             <Switch 
               checked={isAvailable} 
               onCheckedChange={toggleAvailability} 
               className="scale-125"
             />
-            <span className={isAvailable ? "text-green-600" : "text-gray-500"}>
+            <span className={isAvailable ? "text-green-600 text-base" : "text-gray-500 text-base"}>
               {isAvailable ? "Available" : "Unavailable"}
             </span>
           </div>
           
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-2">
             <Link to="/scrapper-profile">
-              <Button variant="outline" className="flex items-center gap-2">
+              <Button variant="outline" className="flex items-center gap-2 text-base">
                 <User className="w-4 h-4" />
                 Profile
               </Button>
             </Link>
             <Link to="/faq">
-              <Button variant="outline" className="flex items-center gap-2">
+              <Button variant="outline" className="flex items-center gap-2 text-base">
                 <HelpCircle className="w-4 h-4" />
                 Help
               </Button>
             </Link>
+            <LogoutButton />
           </div>
         </div>
 
@@ -194,27 +196,27 @@ const ScrapperDashboard = () => {
                       <CardContent className="p-4">
                         <div className="flex flex-col gap-2 mb-4">
                           <div className="flex justify-between">
-                            <h3 className="font-medium">{request.profiles?.name || "User"}</h3>
-                            <p className="text-gray-500">{request.time_slot} - {request.date}</p>
+                            <h3 className="font-medium text-base">{request.users?.name || "User"}</h3>
+                            <p className="text-gray-500 text-base">{request.time_slot} - {request.date}</p>
                           </div>
                           <div className="flex gap-2 items-center">
                             <MapPin className="w-4 h-4 text-gray-500" />
-                            <p className="text-sm">{request.address}</p>
+                            <p className="text-base">{request.address}</p>
                           </div>
-                          <p className="text-sm">
+                          <p className="text-base">
                             <span className="font-medium">{request.weight} kg</span> of {request.type}
                           </p>
                         </div>
                         <div className="flex gap-2">
                           <Button 
-                            className="w-1/2" 
+                            className="w-1/2 text-base" 
                             onClick={() => handleAccept(request)}
                           >
                             Accept
                           </Button>
                           <Button 
                             variant="outline" 
-                            className="w-1/2 text-red-600 border-red-300 hover:bg-red-50" 
+                            className="w-1/2 text-base text-red-600 border-red-300 hover:bg-red-50" 
                             onClick={() => handleReject(request.id)}
                           >
                             Reject
@@ -226,7 +228,7 @@ const ScrapperDashboard = () => {
                 </div>
               ) : (
                 <div className="py-8 text-center text-gray-500">
-                  <p>No requests available</p>
+                  <p className="text-base">No requests available</p>
                 </div>
               )}
             </CardContent>
@@ -234,8 +236,8 @@ const ScrapperDashboard = () => {
         ) : (
           <Tabs defaultValue="details">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="details">Pickup Details</TabsTrigger>
-              <TabsTrigger value="navigation">Navigation</TabsTrigger>
+              <TabsTrigger value="details" className="text-base py-2">Pickup Details</TabsTrigger>
+              <TabsTrigger value="navigation" className="text-base py-2">Navigation</TabsTrigger>
             </TabsList>
             
             <TabsContent value="details">
@@ -251,49 +253,49 @@ const ScrapperDashboard = () => {
                     <div className="bg-white p-4 rounded-lg border">
                       <div className="flex flex-col gap-2 mb-4">
                         <div className="flex justify-between">
-                          <h3 className="font-medium">{activePickup?.profiles?.name || "User"}</h3>
+                          <h3 className="font-medium text-base">{activePickup?.users?.name || "User"}</h3>
                           <div className="flex items-center gap-1">
                             <Clock className="w-4 h-4 text-blue-500" />
-                            <p className="text-sm">{activePickup?.time_slot || "Morning"} - {activePickup?.date || "Today"}</p>
+                            <p className="text-base">{activePickup?.time_slot || "Morning"} - {activePickup?.date || "Today"}</p>
                           </div>
                         </div>
                         <div className="flex gap-2 items-center">
                           <MapPin className="w-4 h-4 text-red-500" />
-                          <p>{activePickup?.address || "Address not available"}</p>
+                          <p className="text-base">{activePickup?.address || "Address not available"}</p>
                         </div>
                         <div className="flex gap-2 items-center">
                           <PhoneCall className="w-4 h-4 text-green-500" />
-                          <p>{activePickup?.profiles?.phone || "Phone not available"}</p>
+                          <p className="text-base">{activePickup?.users?.phone || "Phone not available"}</p>
                         </div>
-                        <p>
+                        <p className="text-base">
                           <span className="font-medium">{activePickup?.weight || 0} kg</span> of {activePickup?.type || "waste"}
                         </p>
                       </div>
                     </div>
                     
                     <div className="bg-blue-50 p-4 rounded-lg">
-                      <h3 className="font-medium flex items-center gap-2 mb-2">
+                      <h3 className="font-medium flex items-center gap-2 mb-2 text-base">
                         <Navigation className="w-4 h-4 text-blue-600" />
                         ETA: 10 minutes
                       </h3>
-                      <p className="text-sm text-gray-600">Distance: 3.2 km</p>
+                      <p className="text-gray-600 text-base">Distance: 3.2 km</p>
                     </div>
                     
                     <div className="flex flex-col gap-3">
                       <Button
-                        className={activePickupStatus === 'En Route' ? 'bg-blue-600' : ''}
+                        className={`${activePickupStatus === 'En Route' ? 'bg-blue-600' : ''} text-base py-3`}
                         onClick={() => updateStatus('En Route')}
                       >
                         En Route
                       </Button>
                       <Button
-                        className={activePickupStatus === 'Arrived' ? 'bg-blue-600' : ''}
+                        className={`${activePickupStatus === 'Arrived' ? 'bg-blue-600' : ''} text-base py-3`}
                         onClick={() => updateStatus('Arrived')}
                       >
                         Arrived
                       </Button>
                       <Button
-                        className={activePickupStatus === 'Completed' ? 'bg-green-600' : ''}
+                        className={`${activePickupStatus === 'Completed' ? 'bg-green-600' : ''} text-base py-3`}
                         onClick={() => updateStatus('Completed')}
                       >
                         Completed
@@ -315,14 +317,14 @@ const ScrapperDashboard = () => {
                 <CardContent>
                   <div className="space-y-4">
                     <div className="bg-gray-200 rounded-lg w-full aspect-video flex items-center justify-center">
-                      <p className="text-gray-500">Map View (Google Maps API integration required)</p>
+                      <p className="text-gray-500 text-base">Map View (Google Maps API integration required)</p>
                     </div>
                     <div className="bg-blue-50 p-4 rounded-lg">
-                      <h3 className="font-medium flex items-center gap-2 mb-2">
+                      <h3 className="font-medium flex items-center gap-2 mb-2 text-base">
                         <Navigation className="w-4 h-4 text-blue-600" />
                         Destination: {activePickup?.address || "Address not available"}
                       </h3>
-                      <p className="text-sm text-gray-600">ETA: 10 minutes • 3.2 km</p>
+                      <p className="text-gray-600 text-base">ETA: 10 minutes • 3.2 km</p>
                     </div>
                   </div>
                 </CardContent>

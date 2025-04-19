@@ -49,11 +49,11 @@ const SignInPage = () => {
 
   return (
     <div className="min-h-screen py-8 px-4 bg-gray-50">
-      <div className="scrap-container">
+      <div className="scrap-container max-w-[600px] mx-auto">
         <AuthHeader />
         
         <div className="scrap-card">
-          <h1 className="scrap-heading">
+          <h1 className="scrap-heading text-2xl md:text-3xl">
             Sign In to ScrapEasy
           </h1>
 
@@ -61,7 +61,7 @@ const SignInPage = () => {
           <FormDivider />
 
           {errorMessage && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg">
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-base">
               {errorMessage}
             </div>
           )}
@@ -73,11 +73,11 @@ const SignInPage = () => {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="scrap-label">Email Address</FormLabel>
+                    <FormLabel className="scrap-label text-base">Email Address</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder="Enter your email" className="scrap-input" {...field} />
+                      <Input type="email" placeholder="Enter your email" className="scrap-input text-base py-2" {...field} />
                     </FormControl>
-                    <FormMessage className="scrap-error" />
+                    <FormMessage className="scrap-error text-base" />
                   </FormItem>
                 )}
               />
@@ -87,24 +87,24 @@ const SignInPage = () => {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="scrap-label">Password</FormLabel>
+                    <FormLabel className="scrap-label text-base">Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="Enter your password" className="scrap-input" {...field} />
+                      <Input type="password" placeholder="Enter your password" className="scrap-input text-base py-2" {...field} />
                     </FormControl>
-                    <FormMessage className="scrap-error" />
+                    <FormMessage className="scrap-error text-base" />
                   </FormItem>
                 )}
               />
               
               <div className="flex justify-end">
-                <Link to="/forgot-password" className="text-scrap-blue hover:underline text-sm">
+                <Link to="/forgot-password" className="text-scrap-blue hover:underline text-base">
                   Forgot Password?
                 </Link>
               </div>
               
               <Button 
                 type="submit" 
-                className="w-full scrap-btn-secondary mt-6"
+                className="w-full scrap-btn-secondary mt-6 text-lg py-3"
                 disabled={form.formState.isSubmitting}
               >
                 {form.formState.isSubmitting ? 'Signing In...' : 'Sign In'}
@@ -112,7 +112,7 @@ const SignInPage = () => {
             </form>
           </Form>
           
-          <p className="mt-6 text-center text-gray-600">
+          <p className="mt-6 text-center text-gray-600 text-base">
             Don't have an account?{' '}
             <Link to="/signup" className="text-scrap-blue hover:underline font-medium">
               Sign Up

@@ -2,16 +2,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-
-export interface BusinessLocation {
-  id: string;
-  name: string;
-  address: string;
-  summary: string | null;
-  latitude: number;
-  longitude: number;
-  created_at?: string;
-}
+import { BusinessLocation } from '@/types';
 
 export const useBusinessLocationScraper = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -26,9 +17,18 @@ export const useBusinessLocationScraper = () => {
 
       if (error) throw error;
 
+      // Make sure the data has the correct format
+      const formattedData = {
+        name: scrapedData.name,
+        address: scrapedData.address,
+        summary: scrapedData.summary || null,
+        latitude: scrapedData.latitude,
+        longitude: scrapedData.longitude
+      };
+
       const { data: newLocation, error: insertError } = await supabase
         .from('business_locations')
-        .insert(scrapedData)
+        .insert(formattedData)
         .select()
         .single();
 

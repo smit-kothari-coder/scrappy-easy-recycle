@@ -37,13 +37,14 @@ const BusinessLocationScraper = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex space-x-2">
+      <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
         <Input 
           value={url} 
           onChange={(e) => setUrl(e.target.value)}
           placeholder="Enter website URL to scrape" 
+          className="text-base"
         />
-        <Button onClick={handleScrape} disabled={isLoading}>
+        <Button onClick={handleScrape} disabled={isLoading} className="text-base py-2 px-4">
           {isLoading ? 'Scraping...' : 'Scrape'}
         </Button>
       </div>
@@ -54,7 +55,7 @@ const BusinessLocationScraper = () => {
           center={mapCenter}
           zoom={locations.length ? 13 : 2} 
           style={{ height: '400px', width: '100%' }}
-          className="w-full h-full"
+          className="w-full h-full rounded-lg"
         >
           {/* @ts-ignore - Known issue with react-leaflet types */}
           <TileLayer
