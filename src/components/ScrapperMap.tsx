@@ -43,14 +43,15 @@ const ScrapperMap = () => {
   
   return (
     <div className="w-full h-[400px]">
-      {/* @ts-ignore - Known issue with react-leaflet types */}
+      {/* Using @ts-ignore to bypass the type checking issues with react-leaflet */}
+      {/* @ts-ignore */}
       <MapContainer 
         center={defaultPosition}
         zoom={5}
         style={{ height: '400px', width: '100%' }}
         className="w-full h-full rounded-lg"
       >
-        {/* @ts-ignore - Known issue with react-leaflet types */}
+        {/* @ts-ignore */}
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -58,12 +59,13 @@ const ScrapperMap = () => {
         
         {scrappers.map((scrapper) => (
           scrapper.latitude && scrapper.longitude ? (
-            /* @ts-ignore - Known issue with react-leaflet types */
+            /* @ts-ignore */
             <Marker 
               key={scrapper.id}
               position={[scrapper.latitude, scrapper.longitude]}
             >
-              <Popup className="text-base">
+              {/* @ts-ignore */}
+              <Popup>
                 <div>
                   <strong className="text-base">{scrapper.name}</strong>
                   <p className="text-base">Vehicle: {scrapper.vehicle_type || 'Not specified'}</p>

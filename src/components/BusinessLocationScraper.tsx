@@ -50,24 +50,26 @@ const BusinessLocationScraper = () => {
       </div>
 
       <div key={mapKey} className="w-full h-[400px]">
-        {/* @ts-ignore - Known issue with react-leaflet types */}
+        {/* Using @ts-ignore to bypass the type checking issues with react-leaflet */}
+        {/* @ts-ignore */}
         <MapContainer 
           center={mapCenter}
           zoom={locations.length ? 13 : 2} 
           style={{ height: '400px', width: '100%' }}
           className="w-full h-full rounded-lg"
         >
-          {/* @ts-ignore - Known issue with react-leaflet types */}
+          {/* @ts-ignore */}
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
           {locations.map((location) => (
-            /* @ts-ignore - Known issue with react-leaflet types */
+            /* @ts-ignore */
             <Marker 
               key={location.id}
               position={[location.latitude, location.longitude]}
             >
+              {/* @ts-ignore */}
               <Popup>
                 <div>
                   <strong>{location.name}</strong>
