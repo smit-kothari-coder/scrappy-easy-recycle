@@ -14,7 +14,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-const ScrapperMap = () => {
+const ScrapperMap: React.FC = () => {
   const [scrappers, setScrappers] = useState<Scrapper[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { getActiveScrappers } = useSupabase();
@@ -43,15 +43,12 @@ const ScrapperMap = () => {
   
   return (
     <div className="w-full h-[400px]">
-      {/* Using @ts-ignore to bypass the type checking issues with react-leaflet */}
-      {/* @ts-ignore */}
       <MapContainer 
-        center={defaultPosition}
+        center={defaultPosition as L.LatLngExpression}
         zoom={5}
         style={{ height: '400px', width: '100%' }}
         className="w-full h-full rounded-lg"
       >
-        {/* @ts-ignore */}
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -59,12 +56,10 @@ const ScrapperMap = () => {
         
         {scrappers.map((scrapper) => (
           scrapper.latitude && scrapper.longitude ? (
-            /* @ts-ignore */
             <Marker 
               key={scrapper.id}
-              position={[scrapper.latitude, scrapper.longitude]}
+              position={[scrapper.latitude, scrapper.longitude] as L.LatLngExpression}
             >
-              {/* @ts-ignore */}
               <Popup>
                 <div>
                   <strong className="text-base">{scrapper.name}</strong>

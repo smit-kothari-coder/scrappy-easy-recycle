@@ -15,7 +15,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-const BusinessLocationScraper = () => {
+const BusinessLocationScraper: React.FC = () => {
   const [url, setUrl] = useState('');
   const { scrapeBusinessLocation, locations, isLoading } = useBusinessLocationScraper();
   const [mapKey, setMapKey] = useState(0);
@@ -50,26 +50,21 @@ const BusinessLocationScraper = () => {
       </div>
 
       <div key={mapKey} className="w-full h-[400px]">
-        {/* Using @ts-ignore to bypass the type checking issues with react-leaflet */}
-        {/* @ts-ignore */}
         <MapContainer 
-          center={mapCenter}
+          center={mapCenter as L.LatLngExpression}
           zoom={locations.length ? 13 : 2} 
           style={{ height: '400px', width: '100%' }}
           className="w-full h-full rounded-lg"
         >
-          {/* @ts-ignore */}
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
           {locations.map((location) => (
-            /* @ts-ignore */
             <Marker 
               key={location.id}
-              position={[location.latitude, location.longitude]}
+              position={[location.latitude, location.longitude] as L.LatLngExpression}
             >
-              {/* @ts-ignore */}
               <Popup>
                 <div>
                   <strong>{location.name}</strong>
