@@ -1,78 +1,148 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { toast } from 'sonner';
 import { 
   User, 
   HelpCircle, 
   MapPin, 
-  CheckCircle, 
-  XCircle,
-  Box,
   Navigation,
   Clock,
-  PhoneCall
+  PhoneCall,
+  Box
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from 'sonner';
+import { useSupabase } from '@/hooks/useSupabase';
+import type { Pickup, Scrapper } from '@/types';
+
+// Mock scrapper data for demo purposes
+const mockScrapperId = "1";
+const mockEmail = "john@scrapeasy.com";
 
 const ScrapperDashboard = () => {
+  const { 
+    getScrapper, 
+    updateScrapper,
+    getPickupRequests,
+    acceptPickup,
+    rejectPickup,
+    getActivePickup,
+    updatePickupStatus
+  } = useSupabase();
+  
   const [isAvailable, setIsAvailable] = useState(true);
-  const [activePickupStatus, setActivePickupStatus] = useState<'en-route' | 'arrived' | 'completed' | null>('en-route');
-  
-  const toggleAvailability = () => {
-    setIsAvailable(!isAvailable);
-    toast.success(`You are now ${!isAvailable ? 'available' : 'unavailable'} for pickups`);
-  };
-  
-  const mockRequests = [
-    {
-      id: 1,
-      user: "Rahul Kumar",
-      address: "123 Main St, Jaipur",
-      weight: "10",
-      type: "Metal",
-      time: "Tomorrow Morning",
-      phone: "+91 98765 43210"
-    },
-    {
-      id: 2,
-      user: "Priya Singh",
-      address: "456 Park Ave, Jaipur",
-      weight: "15",
-      type: "Paper",
-      time: "Tomorrow Afternoon",
-      phone: "+91 87654 32109"
-    }
-  ];
-  
-  const [activePickup, setActivePickup] = useState(mockRequests[0]);
+  const [activePickupStatus, setActivePickupStatus] = useState<'En Route' | 'Arrived' | 'Completed' | null>('En Route');
+  const [scrapper, setScrapper] = useState<Scrapper | null>(null);
+  const [requests, setRequests] = useState<any[]>([]);
+  const [activePickup, setActivePickup] = useState<any>(null);
   const [showRequests, setShowRequests] = useState(true);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch scrapper data and pickup requests on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // In a real app, we would get the email from auth
+        const scrapperData = await getScrapper(mockEmail);
+        setScrapper(scrapperData);
+        setIsAvailable(scrapperData.available);
+        
+        // Check if there's an active pickup
+        const active = await getActivePickup(scrapperData.id);
+        if (active) {
+          setActivePickup(active);
+          setShowRequests(false);
+          setActivePickupStatus(active.status as any);
+        }
+        
+        // Get pickup requests
+        const pickupRequests = await getPickupRequests();
+        setRequests(pickupRequests);
+        
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        toast.error("Failed to load dashboard data");
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, []);
   
-  const handleAccept = (request: any) => {
-    setActivePickup(request);
-    setShowRequests(false);
-    toast.success("Pickup accepted!");
-  };
-  
-  const handleReject = (id: number) => {
-    toast.success("Pickup rejected");
-  };
-  
-  const updateStatus = (status: 'en-route' | 'arrived' | 'completed') => {
-    setActivePickupStatus(status);
-    if (status === 'completed') {
-      toast.success("Pickup completed!");
-      setTimeout(() => {
-        setShowRequests(true);
-        setActivePickupStatus(null);
-      }, 3000);
-    } else {
-      toast.success(`Status updated: ${status.replace('-', ' ')}`);
+  const toggleAvailability = async () => {
+    if (!scrapper) return;
+    
+    try {
+      const updatedScrapper = await updateScrapper(scrapper.id, { available: !isAvailable });
+      setIsAvailable(!isAvailable);
+      setScrapper(updatedScrapper);
+      toast.success(`You are now ${!isAvailable ? 'available' : 'unavailable'} for pickups`);
+    } catch (error) {
+      console.error("Error updating availability:", error);
+      toast.error("Failed to update availability");
     }
   };
+  
+  const handleAccept = async (request: any) => {
+    if (!scrapper) return;
+    
+    try {
+      const accepted = await acceptPickup(request.id, scrapper.id);
+      setActivePickup(accepted);
+      setShowRequests(false);
+      setActivePickupStatus('En Route');
+      toast.success("Pickup accepted!");
+    } catch (error) {
+      console.error("Error accepting pickup:", error);
+      toast.error("Failed to accept pickup");
+    }
+  };
+  
+  const handleReject = async (id: string) => {
+    try {
+      await rejectPickup(id);
+      setRequests(requests.filter(request => request.id !== id));
+      toast.success("Pickup rejected");
+    } catch (error) {
+      console.error("Error rejecting pickup:", error);
+      toast.error("Failed to reject pickup");
+    }
+  };
+  
+  const updateStatus = async (status: 'En Route' | 'Arrived' | 'Completed') => {
+    if (!activePickup) return;
+    
+    try {
+      await updatePickupStatus(activePickup.id, status);
+      setActivePickupStatus(status);
+      
+      if (status === 'Completed') {
+        toast.success("Pickup completed!");
+        setTimeout(() => {
+          setShowRequests(true);
+          setActivePickupStatus(null);
+          setActivePickup(null);
+        }, 3000);
+      } else {
+        toast.success(`Status updated: ${status.replace('-', ' ')}`);
+      }
+    } catch (error) {
+      console.error("Error updating status:", error);
+      toast.error("Failed to update status");
+    }
+  };
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen p-6 bg-gray-50 flex items-center justify-center">
+        <p className="text-lg">Loading dashboard...</p>
+      </div>
+    );
+  }
   
   return (
     <div className="min-h-screen p-6 bg-gray-50">
@@ -117,15 +187,15 @@ const ScrapperDashboard = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {mockRequests.length > 0 ? (
+              {requests.length > 0 ? (
                 <div className="space-y-4">
-                  {mockRequests.map((request) => (
+                  {requests.map((request) => (
                     <Card key={request.id}>
                       <CardContent className="p-4">
                         <div className="flex flex-col gap-2 mb-4">
                           <div className="flex justify-between">
-                            <h3 className="font-medium">{request.user}</h3>
-                            <p className="text-gray-500">{request.time}</p>
+                            <h3 className="font-medium">{request.profiles?.name || "User"}</h3>
+                            <p className="text-gray-500">{request.time_slot} - {request.date}</p>
                           </div>
                           <div className="flex gap-2 items-center">
                             <MapPin className="w-4 h-4 text-gray-500" />
@@ -181,22 +251,22 @@ const ScrapperDashboard = () => {
                     <div className="bg-white p-4 rounded-lg border">
                       <div className="flex flex-col gap-2 mb-4">
                         <div className="flex justify-between">
-                          <h3 className="font-medium">{activePickup.user}</h3>
+                          <h3 className="font-medium">{activePickup?.profiles?.name || "User"}</h3>
                           <div className="flex items-center gap-1">
                             <Clock className="w-4 h-4 text-blue-500" />
-                            <p className="text-sm">{activePickup.time}</p>
+                            <p className="text-sm">{activePickup?.time_slot || "Morning"} - {activePickup?.date || "Today"}</p>
                           </div>
                         </div>
                         <div className="flex gap-2 items-center">
                           <MapPin className="w-4 h-4 text-red-500" />
-                          <p>{activePickup.address}</p>
+                          <p>{activePickup?.address || "Address not available"}</p>
                         </div>
                         <div className="flex gap-2 items-center">
                           <PhoneCall className="w-4 h-4 text-green-500" />
-                          <p>{activePickup.phone}</p>
+                          <p>{activePickup?.profiles?.phone || "Phone not available"}</p>
                         </div>
                         <p>
-                          <span className="font-medium">{activePickup.weight} kg</span> of {activePickup.type}
+                          <span className="font-medium">{activePickup?.weight || 0} kg</span> of {activePickup?.type || "waste"}
                         </p>
                       </div>
                     </div>
@@ -211,20 +281,20 @@ const ScrapperDashboard = () => {
                     
                     <div className="flex flex-col gap-3">
                       <Button
-                        className={activePickupStatus === 'en-route' ? 'bg-blue-600' : ''}
-                        onClick={() => updateStatus('en-route')}
+                        className={activePickupStatus === 'En Route' ? 'bg-blue-600' : ''}
+                        onClick={() => updateStatus('En Route')}
                       >
                         En Route
                       </Button>
                       <Button
-                        className={activePickupStatus === 'arrived' ? 'bg-blue-600' : ''}
-                        onClick={() => updateStatus('arrived')}
+                        className={activePickupStatus === 'Arrived' ? 'bg-blue-600' : ''}
+                        onClick={() => updateStatus('Arrived')}
                       >
                         Arrived
                       </Button>
                       <Button
-                        className={activePickupStatus === 'completed' ? 'bg-green-600' : ''}
-                        onClick={() => updateStatus('completed')}
+                        className={activePickupStatus === 'Completed' ? 'bg-green-600' : ''}
+                        onClick={() => updateStatus('Completed')}
                       >
                         Completed
                       </Button>
@@ -245,12 +315,12 @@ const ScrapperDashboard = () => {
                 <CardContent>
                   <div className="space-y-4">
                     <div className="bg-gray-200 rounded-lg w-full aspect-video flex items-center justify-center">
-                      <p className="text-gray-500">Map View (Google Maps API required)</p>
+                      <p className="text-gray-500">Map View (Google Maps API integration required)</p>
                     </div>
                     <div className="bg-blue-50 p-4 rounded-lg">
                       <h3 className="font-medium flex items-center gap-2 mb-2">
                         <Navigation className="w-4 h-4 text-blue-600" />
-                        Destination: {activePickup.address}
+                        Destination: {activePickup?.address || "Address not available"}
                       </h3>
                       <p className="text-sm text-gray-600">ETA: 10 minutes • 3.2 km</p>
                     </div>
