@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -11,8 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 import { AuthHeader } from '@/components/AuthHeader';
-import { FormDivider } from '@/components/FormDivider';
-import { GoogleAuthButton } from '@/components/GoogleAuthButton';
+import { useAuth } from '@/hooks/useAuth';
 
 const indianCities = [
   "Delhi", "Mumbai", "Kolkata", "Chennai", "Bangalore", 
@@ -32,11 +31,14 @@ type BaseFormValues = {
   password: string;
   confirmPassword: string;
   city: string;
+  address: string;
 };
 
 type ScrapperFormValues = BaseFormValues & {
   vehicleType: string;
   workingHours: string;
+  latitude: string;
+  longitude: string;
 };
 
 // Union type for our form
@@ -47,9 +49,10 @@ const createSignUpSchema = (role: string) => {
     name: z.string().min(2, "Name must be at least 2 characters"),
     email: z.string().email("Please enter a valid email address"),
     phone: z.string().regex(/^[6-9]\d{9}$/, "Please enter a valid 10-digit Indian phone number"),
-    password: z.string().min(8, "Password must be at least 8 characters"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
     confirmPassword: z.string(),
     city: z.string().min(1, "Please select a city"),
+    address: z.string().min(5, "Please enter a valid address"),
   };
 
   if (role === "scrapper") {
@@ -57,6 +60,8 @@ const createSignUpSchema = (role: string) => {
       ...baseSchema,
       vehicleType: z.string().min(1, "Please select a vehicle type"),
       workingHours: z.string().min(1, "Please specify your working hours"),
+      latitude: z.string().optional(),
+      longitude: z.string().optional(),
     }).refine(data => data.password === data.confirmPassword, {
       message: "Passwords do not match",
       path: ["confirmPassword"],
@@ -71,7 +76,7 @@ const createSignUpSchema = (role: string) => {
 
 const SignUpPage = () => {
   const [role, setRole] = useState<'user' | 'scrapper'>('user');
-  const navigate = useNavigate();
+  const { signUp, loading } = useAuth();
   const schema = createSignUpSchema(role);
 
   const form = useForm<ScrapperFormValues>({
@@ -83,28 +88,26 @@ const SignUpPage = () => {
       password: '',
       confirmPassword: '',
       city: '',
+      address: '',
       vehicleType: '',
       workingHours: '',
+      latitude: '',
+      longitude: '',
     },
   });
 
-  const onSubmit = (data: FormValues) => {
-    console.log('Sign-up data:', data);
-    
-    // In a real app, this would send the data to an API
-    // For now, we'll simulate success and redirect
-    setTimeout(() => {
-      const redirectPath = role === 'user' ? '/user-dashboard' : '/scrapper-dashboard';
-      navigate(redirectPath);
-    }, 1500);
+  const onSubmit = async (data: FormValues) => {
+    // Separate password and userData for security
+    const { password, ...userData } = data;
+    await signUp(data.email, password, userData, role === 'scrapper');
   };
 
   return (
-    <div className="min-h-screen py-8 px-4 bg-gray-50">
+    <div className="min-h-screen py-8 px-4 bg-gray-50 animate-fade-in">
       <div className="scrap-container max-w-[600px] mx-auto">
         <AuthHeader />
         
-        <div className="scrap-card">
+        <div className="scrap-card bg-white p-6 rounded-lg shadow-lg border border-gray-200">
           <h1 className="scrap-heading text-center mb-6 text-2xl md:text-3xl">
             Create Your Account
           </h1>
@@ -114,21 +117,18 @@ const SignUpPage = () => {
             <Button 
               type="button" 
               onClick={() => setRole('user')}
-              className={`flex-1 py-3 text-lg ${role === 'user' ? 'bg-scrap-green hover:bg-scrap-green/90' : 'bg-gray-200 hover:bg-gray-300 text-gray-800'}`}
+              className={`flex-1 py-3 text-lg transition-transform hover:scale-105 ${role === 'user' ? 'bg-scrap-green hover:bg-scrap-green/90' : 'bg-gray-200 hover:bg-gray-300 text-gray-800'}`}
             >
               I need recycling
             </Button>
             <Button 
               type="button" 
               onClick={() => setRole('scrapper')}
-              className={`flex-1 py-3 text-lg ${role === 'scrapper' ? 'bg-scrap-green hover:bg-scrap-green/90' : 'bg-gray-200 hover:bg-gray-300 text-gray-800'}`}
+              className={`flex-1 py-3 text-lg transition-transform hover:scale-105 ${role === 'scrapper' ? 'bg-scrap-green hover:bg-scrap-green/90' : 'bg-gray-200 hover:bg-gray-300 text-gray-800'}`}
             >
               I'm a scrapper
             </Button>
           </div>
-
-          <GoogleAuthButton type="signup" className="mb-4" />
-          <FormDivider />
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -168,6 +168,20 @@ const SignUpPage = () => {
                     <FormLabel className="scrap-label text-base">Phone Number</FormLabel>
                     <FormControl>
                       <Input placeholder="10-digit mobile number" className="scrap-input text-base py-2" {...field} />
+                    </FormControl>
+                    <FormMessage className="scrap-error text-base" />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="address"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="scrap-label text-base">Address</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter your full address" className="scrap-input text-base py-2" {...field} />
                     </FormControl>
                     <FormMessage className="scrap-error text-base" />
                   </FormItem>
@@ -241,6 +255,36 @@ const SignUpPage = () => {
                       </FormItem>
                     )}
                   />
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="latitude"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="scrap-label text-base">Latitude (Optional)</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., 26.9124" className="scrap-input text-base py-2" {...field} />
+                          </FormControl>
+                          <FormMessage className="scrap-error text-base" />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="longitude"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="scrap-label text-base">Longitude (Optional)</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., 75.7873" className="scrap-input text-base py-2" {...field} />
+                          </FormControl>
+                          <FormMessage className="scrap-error text-base" />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 </>
               )}
 
@@ -251,7 +295,7 @@ const SignUpPage = () => {
                   <FormItem>
                     <FormLabel className="scrap-label text-base">Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="Create a password" className="scrap-input text-base py-2" {...field} />
+                      <Input type="password" placeholder="Create a password (min 6 characters)" className="scrap-input text-base py-2" {...field} />
                     </FormControl>
                     <FormMessage className="scrap-error text-base" />
                   </FormItem>
@@ -274,10 +318,10 @@ const SignUpPage = () => {
               
               <Button 
                 type="submit" 
-                className="w-full scrap-btn-primary mt-6 text-lg py-3"
-                disabled={form.formState.isSubmitting}
+                className="w-full scrap-btn-primary mt-6 text-lg py-3 transition-transform hover:scale-105"
+                disabled={loading}
               >
-                {form.formState.isSubmitting ? 'Creating Account...' : 'Create Account'}
+                {loading ? 'Creating Account...' : 'Create Account'}
               </Button>
             </form>
           </Form>

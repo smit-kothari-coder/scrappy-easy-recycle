@@ -3,36 +3,228 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer components {
-  .scrap-container {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+@layer base {
+  :root {
+    /* Custom ScrapEasy base styling */
+    font-size: 16px;
+    
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    /* Primary is now Green (#28a745) */
+    --primary: 134 61% 41%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary is now Blue (#007bff) */
+    --secondary: 211 100% 50%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 134 61% 95%;
+    --accent-foreground: 134 61% 41%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 134 61% 41%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+    
+    /* ScrapEasy colors */
+    --scrap-green: #28a745;
+    --scrap-blue: #007bff;
+    --scrap-red: #dc3545;
   }
 
-  .scrap-card {
-    @apply bg-white shadow rounded-lg p-6;
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .scrap-container {
+    @apply max-w-[600px] w-full mx-auto px-4 sm:px-6;
   }
 
   .scrap-heading {
-    @apply text-2xl font-bold text-gray-900 mb-6;
+    @apply text-3xl sm:text-4xl font-bold mb-6 text-center;
   }
-
-  .scrap-label {
-    @apply block text-sm font-medium text-gray-700 mb-1;
-  }
-
-  .scrap-input {
-    @apply w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent;
-  }
-
+  
   .scrap-btn-primary {
-    @apply w-full py-2 px-4 bg-green-600 text-white font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors;
+    @apply bg-scrap-green text-white py-3 px-6 rounded-lg text-lg font-medium hover:bg-scrap-green/90 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-scrap-green focus:ring-offset-2 w-full sm:w-auto;
   }
-
+  
   .scrap-btn-secondary {
-    @apply w-full py-2 px-4 bg-white text-gray-700 font-medium rounded-md border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors;
+    @apply bg-scrap-blue text-white py-3 px-6 rounded-lg text-lg font-medium hover:bg-scrap-blue/90 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-scrap-blue focus:ring-offset-2 w-full sm:w-auto;
+  }
+  
+  .scrap-input {
+    @apply w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-scrap-green focus:border-transparent text-base;
+  }
+  
+  .scrap-label {
+    @apply block text-base font-medium mb-1;
+  }
+  
+  .scrap-card {
+    @apply bg-white p-6 rounded-lg shadow-md border border-gray-200;
+  }
+  
+  .scrap-error {
+    @apply text-red-500 text-sm mt-1;
+  }
+  
+  .scrap-success {
+    @apply text-scrap-green text-sm mt-1;
   }
 
-  .scrap-error {
-    @apply text-sm text-red-600 mt-1;
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
   }
+
+  .animate-slide-in {
+    animation: slideIn 0.3s ease-out;
+  }
+}
+
+/* Button hover animations */
+button, a {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+button:hover, a:hover {
+  transform: translateY(-1px);
+}
+
+/* Backgrounds */
+.bg-scrap-green {
+  background-color: var(--scrap-green);
+}
+
+.bg-scrap-blue {
+  background-color: var(--scrap-blue);
+}
+
+.bg-scrap-red {
+  background-color: var(--scrap-red);
+}
+
+.text-scrap-green {
+  color: var(--scrap-green);
+}
+
+.text-scrap-blue {
+  color: var(--scrap-blue);
+}
+
+.text-scrap-red {
+  color: var(--scrap-red);
+}
+
+.hover\:bg-scrap-green\/90:hover {
+  background-color: color-mix(in srgb, var(--scrap-green) 90%, transparent);
+}
+
+.hover\:bg-scrap-blue\/90:hover {
+  background-color: color-mix(in srgb, var(--scrap-blue) 90%, transparent);
+}
+
+.focus\:ring-scrap-green:focus {
+  --tw-ring-color: var(--scrap-green);
+}
+
+.focus\:ring-scrap-blue:focus {
+  --tw-ring-color: var(--scrap-blue);
 }

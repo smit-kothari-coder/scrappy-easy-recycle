@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -9,8 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { AuthHeader } from '@/components/AuthHeader';
-import { FormDivider } from '@/components/FormDivider';
-import { GoogleAuthButton } from '@/components/GoogleAuthButton';
+import { useAuth } from '@/hooks/useAuth';
 
 const signInSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -20,8 +19,7 @@ const signInSchema = z.object({
 type SignInFormValues = z.infer<typeof signInSchema>;
 
 const SignInPage = () => {
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const navigate = useNavigate();
+  const { signIn, loading } = useAuth();
   
   const form = useForm<SignInFormValues>({
     resolver: zodResolver(signInSchema),
@@ -31,40 +29,19 @@ const SignInPage = () => {
     },
   });
 
-  const onSubmit = (data: SignInFormValues) => {
-    console.log('Sign-in data:', data);
-    setErrorMessage(null);
-    
-    // In a real app, this would validate with an API
-    // For demo, we'll simulate different dashboards based on email pattern
-    
-    setTimeout(() => {
-      if (data.email.includes('scrapper')) {
-        navigate('/scrapper-dashboard');
-      } else {
-        navigate('/user-dashboard');
-      }
-    }, 1000);
+  const onSubmit = async (data: SignInFormValues) => {
+    await signIn(data.email, data.password);
   };
 
   return (
-    <div className="min-h-screen py-8 px-4 bg-gray-50">
+    <div className="min-h-screen py-8 px-4 bg-gray-50 animate-fade-in">
       <div className="scrap-container max-w-[600px] mx-auto">
         <AuthHeader />
         
-        <div className="scrap-card">
-          <h1 className="scrap-heading text-2xl md:text-3xl">
+        <div className="scrap-card bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+          <h1 className="scrap-heading text-center mb-6 text-2xl md:text-3xl">
             Sign In to ScrapEasy
           </h1>
-
-          <GoogleAuthButton type="login" className="mb-4" />
-          <FormDivider />
-
-          {errorMessage && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-base">
-              {errorMessage}
-            </div>
-          )}
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -104,10 +81,10 @@ const SignInPage = () => {
               
               <Button 
                 type="submit" 
-                className="w-full scrap-btn-secondary mt-6 text-lg py-3"
-                disabled={form.formState.isSubmitting}
+                className="w-full bg-scrap-blue hover:bg-scrap-blue/90 text-white mt-6 text-lg py-3 transition-transform hover:scale-105"
+                disabled={loading}
               >
-                {form.formState.isSubmitting ? 'Signing In...' : 'Sign In'}
+                {loading ? 'Signing In...' : 'Sign In'}
               </Button>
             </form>
           </Form>

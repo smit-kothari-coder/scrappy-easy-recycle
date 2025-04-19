@@ -2,15 +2,17 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { User, Map, History, Gift } from 'lucide-react';
+import { User, Map, History, Gift, LogOut, HelpCircle } from 'lucide-react';
 import SchedulePickup from '@/components/SchedulePickup';
 import PickupHistory from '@/components/PickupHistory';
 import PointsSection from '@/components/PointsSection';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import LogoutButton from '@/components/LogoutButton';
 import ScrapperMap from '@/components/ScrapperMap';
+import { useAuth } from '@/hooks/useAuth';
 
 const UserDashboard = () => {
+  const { signOut } = useAuth();
+  
   return (
     <div className="min-h-screen p-6 bg-gray-50">
       <div className="scrap-container max-w-[600px] mx-auto">
@@ -18,18 +20,25 @@ const UserDashboard = () => {
         
         <div className="flex flex-col sm:flex-row justify-end items-center gap-2 mb-6">
           <Link to="/profile">
-            <Button variant="outline" className="flex items-center gap-2 text-base w-full sm:w-auto">
+            <Button variant="outline" className="flex items-center gap-2 text-base w-full sm:w-auto transition-transform hover:scale-105">
               <User className="w-4 h-4" />
               Profile
             </Button>
           </Link>
           <Link to="/faq">
-            <Button variant="outline" className="flex items-center gap-2 text-base w-full sm:w-auto">
-              <Map className="w-4 h-4" />
+            <Button variant="outline" className="flex items-center gap-2 text-base w-full sm:w-auto transition-transform hover:scale-105">
+              <HelpCircle className="w-4 h-4" />
               Help
             </Button>
           </Link>
-          <LogoutButton />
+          <Button 
+            variant="outline" 
+            className="flex items-center gap-2 text-base text-red-600 hover:bg-red-50 w-full sm:w-auto transition-transform hover:scale-105"
+            onClick={signOut}
+          >
+            <LogOut className="w-4 h-4" />
+            Log Out
+          </Button>
         </div>
 
         <Tabs defaultValue="schedule" className="w-full">
@@ -39,7 +48,7 @@ const UserDashboard = () => {
             <TabsTrigger value="points" className="text-base py-2">Points</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="schedule">
+          <TabsContent value="schedule" className="animate-fade-in">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -65,7 +74,7 @@ const UserDashboard = () => {
             </Card>
           </TabsContent>
           
-          <TabsContent value="history">
+          <TabsContent value="history" className="animate-fade-in">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -79,7 +88,7 @@ const UserDashboard = () => {
             </Card>
           </TabsContent>
           
-          <TabsContent value="points">
+          <TabsContent value="points" className="animate-fade-in">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">

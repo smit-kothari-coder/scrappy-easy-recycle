@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -16,6 +17,8 @@ import FAQPage from "./pages/FAQPage";
 import ContactPage from "./pages/ContactPage";
 import UserProfilePage from "./pages/UserProfilePage";
 import ScrapperProfilePage from "./pages/ScrapperProfilePage";
+import { AuthProvider } from "./hooks/useAuth";
+import RequireAuth from "./components/RequireAuth";
 import "./styles/scrap.css";
 
 const queryClient = new QueryClient();
@@ -26,22 +29,56 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          {/* ScrapEasy Routes */}
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/signup" element={<SignUpPage />} />
-          <Route path="/signin" element={<SignInPage />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/user-dashboard" element={<UserDashboard />} />
-          <Route path="/scrapper-dashboard" element={<ScrapperDashboard />} />
-          <Route path="/faq" element={<FAQPage />} />
-          <Route path="/contact" element={<ContactPage />} />
-          <Route path="/profile" element={<UserProfilePage />} />
-          <Route path="/scrapper-profile" element={<ScrapperProfilePage />} />
-          
-          {/* 404 catch-all route */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AuthProvider>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/signup" element={<SignUpPage />} />
+            <Route path="/signin" element={<SignInPage />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/faq" element={<FAQPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            
+            {/* Protected User Routes */}
+            <Route 
+              path="/user-dashboard" 
+              element={
+                <RequireAuth userType="user">
+                  <UserDashboard />
+                </RequireAuth>
+              } 
+            />
+            <Route 
+              path="/profile" 
+              element={
+                <RequireAuth userType="user">
+                  <UserProfilePage />
+                </RequireAuth>
+              } 
+            />
+            
+            {/* Protected Scrapper Routes */}
+            <Route 
+              path="/scrapper-dashboard" 
+              element={
+                <RequireAuth userType="scrapper">
+                  <ScrapperDashboard />
+                </RequireAuth>
+              } 
+            />
+            <Route 
+              path="/scrapper-profile" 
+              element={
+                <RequireAuth userType="scrapper">
+                  <ScrapperProfilePage />
+                </RequireAuth>
+              } 
+            />
+            
+            {/* 404 catch-all route */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

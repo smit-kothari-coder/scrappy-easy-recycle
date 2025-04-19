@@ -9,7 +9,8 @@ import {
   Navigation,
   Clock,
   PhoneCall,
-  Box
+  Box,
+  LogOut
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,7 +18,7 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSupabase } from '@/hooks/useSupabase';
 import type { Pickup, Scrapper } from '@/types';
-import LogoutButton from '@/components/LogoutButton';
+import { useAuth } from '@/hooks/useAuth';
 
 // Mock scrapper data for demo purposes
 const mockScrapperId = "1";
@@ -34,6 +35,7 @@ const ScrapperDashboard = () => {
     updatePickupStatus
   } = useSupabase();
   
+  const { signOut, user } = useAuth();
   const [isAvailable, setIsAvailable] = useState(true);
   const [activePickupStatus, setActivePickupStatus] = useState<'En Route' | 'Arrived' | 'Completed' | null>('En Route');
   const [scrapper, setScrapper] = useState<Scrapper | null>(null);
@@ -46,8 +48,10 @@ const ScrapperDashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // In a real app, we would get the email from auth
-        const scrapperData = await getScrapper(mockEmail);
+        // Get the current email from auth user
+        const email = user?.email || mockEmail;
+        
+        const scrapperData = await getScrapper(email);
         setScrapper(scrapperData);
         setIsAvailable(scrapperData.available);
         
@@ -72,7 +76,7 @@ const ScrapperDashboard = () => {
     };
     
     fetchData();
-  }, []);
+  }, [user, getScrapper, getActivePickup, getPickupRequests]);
   
   const toggleAvailability = async () => {
     if (!scrapper) return;
@@ -165,23 +169,30 @@ const ScrapperDashboard = () => {
           
           <div className="flex flex-wrap gap-2">
             <Link to="/scrapper-profile">
-              <Button variant="outline" className="flex items-center gap-2 text-base">
+              <Button variant="outline" className="flex items-center gap-2 text-base transition-transform hover:scale-105">
                 <User className="w-4 h-4" />
                 Profile
               </Button>
             </Link>
             <Link to="/faq">
-              <Button variant="outline" className="flex items-center gap-2 text-base">
+              <Button variant="outline" className="flex items-center gap-2 text-base transition-transform hover:scale-105">
                 <HelpCircle className="w-4 h-4" />
                 Help
               </Button>
             </Link>
-            <LogoutButton />
+            <Button 
+              variant="outline" 
+              className="flex items-center gap-2 text-base text-red-600 hover:bg-red-50 transition-transform hover:scale-105" 
+              onClick={signOut}
+            >
+              <LogOut className="w-4 h-4" />
+              Log Out
+            </Button>
           </div>
         </div>
 
         {showRequests ? (
-          <Card>
+          <Card className="animate-fade-in">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Box className="w-5 h-5" />
@@ -192,7 +203,7 @@ const ScrapperDashboard = () => {
               {requests.length > 0 ? (
                 <div className="space-y-4">
                   {requests.map((request) => (
-                    <Card key={request.id}>
+                    <Card key={request.id} className="hover:shadow-md transition-shadow">
                       <CardContent className="p-4">
                         <div className="flex flex-col gap-2 mb-4">
                           <div className="flex justify-between">
@@ -203,20 +214,30 @@ const ScrapperDashboard = () => {
                             <MapPin className="w-4 h-4 text-gray-500" />
                             <p className="text-base">{request.address}</p>
                           </div>
+                          <div className="flex gap-2 items-center mt-1">
+                            <a 
+                              href={`https://www.google.com/maps?q=${encodeURIComponent(request.address)}`} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-scrap-blue hover:underline text-sm"
+                            >
+                              View in Google Maps
+                            </a>
+                          </div>
                           <p className="text-base">
                             <span className="font-medium">{request.weight} kg</span> of {request.type}
                           </p>
                         </div>
                         <div className="flex gap-2">
                           <Button 
-                            className="w-1/2 text-base" 
+                            className="w-1/2 text-base transition-transform hover:scale-105" 
                             onClick={() => handleAccept(request)}
                           >
                             Accept
                           </Button>
                           <Button 
                             variant="outline" 
-                            className="w-1/2 text-base text-red-600 border-red-300 hover:bg-red-50" 
+                            className="w-1/2 text-base text-red-600 border-red-300 hover:bg-red-50 transition-transform hover:scale-105" 
                             onClick={() => handleReject(request.id)}
                           >
                             Reject
@@ -234,7 +255,7 @@ const ScrapperDashboard = () => {
             </CardContent>
           </Card>
         ) : (
-          <Tabs defaultValue="details">
+          <Tabs defaultValue="details" className="animate-fade-in">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="details" className="text-base py-2">Pickup Details</TabsTrigger>
               <TabsTrigger value="navigation" className="text-base py-2">Navigation</TabsTrigger>
@@ -263,6 +284,16 @@ const ScrapperDashboard = () => {
                           <MapPin className="w-4 h-4 text-red-500" />
                           <p className="text-base">{activePickup?.address || "Address not available"}</p>
                         </div>
+                        <div className="flex gap-2 items-center mt-1">
+                          <a 
+                            href={`https://www.google.com/maps?q=${encodeURIComponent(activePickup?.address || '')}`} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-scrap-blue hover:underline text-sm"
+                          >
+                            View in Google Maps
+                          </a>
+                        </div>
                         <div className="flex gap-2 items-center">
                           <PhoneCall className="w-4 h-4 text-green-500" />
                           <p className="text-base">{activePickup?.users?.phone || "Phone not available"}</p>
@@ -283,19 +314,19 @@ const ScrapperDashboard = () => {
                     
                     <div className="flex flex-col gap-3">
                       <Button
-                        className={`${activePickupStatus === 'En Route' ? 'bg-blue-600' : ''} text-base py-3`}
+                        className={`${activePickupStatus === 'En Route' ? 'bg-blue-600' : ''} text-base py-3 transition-transform hover:scale-105`}
                         onClick={() => updateStatus('En Route')}
                       >
                         En Route
                       </Button>
                       <Button
-                        className={`${activePickupStatus === 'Arrived' ? 'bg-blue-600' : ''} text-base py-3`}
+                        className={`${activePickupStatus === 'Arrived' ? 'bg-blue-600' : ''} text-base py-3 transition-transform hover:scale-105`}
                         onClick={() => updateStatus('Arrived')}
                       >
                         Arrived
                       </Button>
                       <Button
-                        className={`${activePickupStatus === 'Completed' ? 'bg-green-600' : ''} text-base py-3`}
+                        className={`${activePickupStatus === 'Completed' ? 'bg-green-600' : ''} text-base py-3 transition-transform hover:scale-105`}
                         onClick={() => updateStatus('Completed')}
                       >
                         Completed
@@ -316,15 +347,24 @@ const ScrapperDashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="bg-gray-200 rounded-lg w-full aspect-video flex items-center justify-center">
-                      <p className="text-gray-500 text-base">Map View (Google Maps API integration required)</p>
-                    </div>
                     <div className="bg-blue-50 p-4 rounded-lg">
                       <h3 className="font-medium flex items-center gap-2 mb-2 text-base">
                         <Navigation className="w-4 h-4 text-blue-600" />
                         Destination: {activePickup?.address || "Address not available"}
                       </h3>
                       <p className="text-gray-600 text-base">ETA: 10 minutes • 3.2 km</p>
+                      
+                      <div className="mt-3">
+                        <a 
+                          href={`https://www.google.com/maps?q=${encodeURIComponent(activePickup?.address || '')}`} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-white bg-scrap-blue hover:bg-scrap-blue/90 py-2 px-4 rounded-md inline-flex items-center gap-2 transition-transform hover:scale-105"
+                        >
+                          <Navigation className="w-4 h-4" />
+                          Open in Google Maps
+                        </a>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
