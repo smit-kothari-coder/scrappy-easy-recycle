@@ -47,7 +47,6 @@ export const useSupabase = () => {
     // Combine date and time_slot into pickup_time
     const pickup_time = `${pickupData.date} ${pickupData.time_slot.split('(')[1].split(')')[0].split('-')[0].trim()}`;
     
-    // Insert into database
     const { data, error } = await supabase
       .from('pickups')
       .insert({
@@ -56,21 +55,14 @@ export const useSupabase = () => {
         weight: pickupData.weight,
         address: pickupData.address,
         pickup_time: pickup_time,
-        type: JSON.stringify(pickupData.type), // Convert array to string for database
+        type: pickupData.type,
         status: 'Requested'
       })
       .select()
       .single();
     
     if (error) throw error;
-    
-    // Convert the string back to array for the returned pickup
-    const pickupWithArrayType = {
-      ...data,
-      type: typeof data.type === 'string' ? JSON.parse(data.type) : data.type
-    };
-    
-    return pickupWithArrayType as unknown as Pickup;
+    return data;
   }, []);
 
   // New functions for scrapper dashboard
@@ -82,22 +74,19 @@ export const useSupabase = () => {
       .single();
     
     if (error) throw error;
-    return data as Scrapper;
+    return data as unknown as Scrapper;
   }, []);
 
-  const updateScrapper = useCallback(async (id: string, updates: Partial<Scrapper>) => {
-    // Handle any array fields that need to be stringified
-    const processedUpdates = { ...updates };
-    
+  const updateScrapper = useCallback(async (id: string, updates: Partial<Omit<Scrapper, 'availability_hours'> & { availability_hours: string }>) => {
     const { data, error } = await supabase
       .from('scrappers')
-      .update(processedUpdates as any) // Use 'as any' temporarily to bypass type checking
+      .update(updates as any)
       .eq('id', id)
       .select()
       .single();
     
     if (error) throw error;
-    return data as Scrapper;
+    return data as unknown as Scrapper;
   }, []);
 
   const updateScrappperLocation = useCallback(async (id: string, latitude: number, longitude: number) => {
@@ -109,7 +98,7 @@ export const useSupabase = () => {
       .single();
     
     if (error) throw error;
-    return data as Scrapper;
+    return data;
   }, []);
 
   const getPickupRequests = useCallback(async () => {
@@ -121,14 +110,8 @@ export const useSupabase = () => {
     
     if (error) throw error;
     
-    // Parse the type field from string to array for each pickup
-    const processedData = data.map(pickup => ({
-      ...pickup,
-      type: typeof pickup.type === 'string' ? JSON.parse(pickup.type) : pickup.type
-    }));
-    
     // Use explicit type assertion to handle the join result
-    return processedData as unknown as (Pickup & { users: { name: string; phone: string } })[];
+    return (data as unknown) as (Pickup & { users: { name: string; phone: string } })[];
   }, []);
 
   const acceptPickup = useCallback(async (pickupId: string, scraperId: string) => {
@@ -144,14 +127,8 @@ export const useSupabase = () => {
     
     if (error) throw error;
     
-    // Parse the type field if it's a string
-    const processedData = {
-      ...data,
-      type: typeof data.type === 'string' ? JSON.parse(data.type) : data.type
-    };
-    
     // Use explicit type assertion to handle the join result
-    return processedData as unknown as (Pickup & { users: { name: string; phone: string } });
+    return (data as unknown) as (Pickup & { users: { name: string; phone: string } });
   }, []);
 
   const rejectPickup = useCallback(async (pickupId: string) => {
@@ -173,14 +150,7 @@ export const useSupabase = () => {
       .single();
     
     if (error) throw error;
-    
-    // Parse the type field if it's a string
-    const processedData = {
-      ...data,
-      type: typeof data.type === 'string' ? JSON.parse(data.type) : data.type
-    };
-    
-    return processedData as unknown as Pickup;
+    return data as unknown as Pickup;
   }, []);
 
   const getActivePickup = useCallback(async (scraperId: string) => {
@@ -193,16 +163,8 @@ export const useSupabase = () => {
     
     if (error && error.code !== 'PGRST116') throw error;
     
-    if (!data) return null;
-    
-    // Parse the type field if it's a string
-    const processedData = {
-      ...data,
-      type: typeof data.type === 'string' ? JSON.parse(data.type) : data.type
-    };
-    
     // Use explicit type assertion to handle the join result and the null case
-    return processedData as unknown as (Pickup & { users: { name: string; phone: string } });
+    return data ? ((data as unknown) as (Pickup & { users: { name: string; phone: string } })) : null;
   }, []);
 
   // Function to logout user

@@ -8,6 +8,7 @@ import {
   Glasses, 
   Construction,
   Shirt,
+  Delete,
   Plus,
   X
 } from 'lucide-react';
@@ -92,14 +93,11 @@ const WasteTypeSelector: React.FC<WasteTypeSelectorProps> = ({ value = [], onCha
               }`}
               onClick={() => handleTypeToggle(type.id)}
             >
-              <div className="flex items-center h-4">
-                <Checkbox 
-                  id={`waste-type-${type.id}`}
-                  checked={isSelected}
-                  // No onCheckedChange handler here to prevent double state updates
-                  className="data-[state=checked]:bg-green-500 border-gray-300"
-                />
-              </div>
+              <Checkbox 
+                id={`waste-type-${type.id}`}
+                checked={isSelected}
+                onCheckedChange={() => handleTypeToggle(type.id)}
+              />
               <div className={`${type.color} rounded-full p-2 mr-2 flex-shrink-0`}>
                 {type.icon}
               </div>
@@ -122,14 +120,11 @@ const WasteTypeSelector: React.FC<WasteTypeSelectorProps> = ({ value = [], onCha
           }`}
           onClick={() => handleTypeToggle('Others')}
         >
-          <div className="flex items-center h-4">
-            <Checkbox 
-              id="waste-type-others"
-              checked={showOtherInput}
-              // No onCheckedChange handler here to prevent double state updates
-              className="data-[state=checked]:bg-green-500 border-gray-300"
-            />
-          </div>
+          <Checkbox 
+            id="waste-type-others"
+            checked={showOtherInput}
+            onCheckedChange={() => handleTypeToggle('Others')}
+          />
           <div className="bg-gray-200 rounded-full p-2 mr-2 flex-shrink-0">
             <Plus className="w-5 h-5" />
           </div>
