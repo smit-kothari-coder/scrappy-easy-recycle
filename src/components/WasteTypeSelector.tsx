@@ -93,11 +93,15 @@ const WasteTypeSelector: React.FC<WasteTypeSelectorProps> = ({ value = [], onCha
               }`}
               onClick={() => handleTypeToggle(type.id)}
             >
-              <Checkbox 
-                id={`waste-type-${type.id}`}
-                checked={isSelected}
-                onCheckedChange={() => handleTypeToggle(type.id)}
-              />
+              <div className="flex items-center h-4">
+                <Checkbox 
+                  id={`waste-type-${type.id}`}
+                  checked={isSelected}
+                  // Fixed: Remove the onCheckedChange handler to prevent double state updates
+                  // We're already handling the state in the parent div's onClick
+                  className="data-[state=checked]:bg-green-500 border-gray-300"
+                />
+              </div>
               <div className={`${type.color} rounded-full p-2 mr-2 flex-shrink-0`}>
                 {type.icon}
               </div>
@@ -120,11 +124,15 @@ const WasteTypeSelector: React.FC<WasteTypeSelectorProps> = ({ value = [], onCha
           }`}
           onClick={() => handleTypeToggle('Others')}
         >
-          <Checkbox 
-            id="waste-type-others"
-            checked={showOtherInput}
-            onCheckedChange={() => handleTypeToggle('Others')}
-          />
+          <div className="flex items-center h-4">
+            <Checkbox 
+              id="waste-type-others"
+              checked={showOtherInput}
+              // Fixed: Remove the onCheckedChange handler to prevent double state updates
+              // We're already handling the state in the parent div's onClick
+              className="data-[state=checked]:bg-green-500 border-gray-300"
+            />
+          </div>
           <div className="bg-gray-200 rounded-full p-2 mr-2 flex-shrink-0">
             <Plus className="w-5 h-5" />
           </div>
