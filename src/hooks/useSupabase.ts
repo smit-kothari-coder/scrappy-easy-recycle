@@ -74,19 +74,19 @@ export const useSupabase = () => {
       .single();
     
     if (error) throw error;
-    return data as unknown as Scrapper;
+    return data as Scrapper;
   }, []);
 
-  const updateScrapper = useCallback(async (id: string, updates: Partial<Omit<Scrapper, 'availability_hours'> & { availability_hours: string }>) => {
+  const updateScrapper = useCallback(async (id: string, updates: Partial<Scrapper>) => {
     const { data, error } = await supabase
       .from('scrappers')
-      .update(updates as any)
+      .update(updates)
       .eq('id', id)
       .select()
       .single();
     
     if (error) throw error;
-    return data as unknown as Scrapper;
+    return data as Scrapper;
   }, []);
 
   const updateScrappperLocation = useCallback(async (id: string, latitude: number, longitude: number) => {
@@ -150,7 +150,7 @@ export const useSupabase = () => {
       .single();
     
     if (error) throw error;
-    return data as unknown as Pickup;
+    return data as Pickup;
   }, []);
 
   const getActivePickup = useCallback(async (scraperId: string) => {
