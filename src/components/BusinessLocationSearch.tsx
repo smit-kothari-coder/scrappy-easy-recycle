@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,6 @@ import { Loader, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { LatLngExpression } from 'leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -33,8 +31,8 @@ const BusinessLocationSearch: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   // Default position (London)
-  const defaultPosition: LatLngExpression = [51.505, -0.09];
-  const position: LatLngExpression = businessLocation 
+  const defaultPosition: [number, number] = [51.505, -0.09];
+  const position: [number, number] = businessLocation 
     ? [businessLocation.latitude, businessLocation.longitude] 
     : defaultPosition;
 
@@ -104,13 +102,12 @@ const BusinessLocationSearch: React.FC = () => {
 
       <div className="h-[400px] w-full rounded-md overflow-hidden border">
         <MapContainer 
-          center={position} 
-          zoom={businessLocation ? 13 : 10} 
           style={{ height: '400px', width: '100%' }}
+          zoom={businessLocation ? 13 : 10} 
         >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            attribution='&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
           
           {businessLocation && (
