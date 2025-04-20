@@ -8,7 +8,6 @@ import {
   Glasses, 
   Construction,
   Shirt,
-  Delete,
   Plus,
   X
 } from 'lucide-react';
@@ -97,8 +96,7 @@ const WasteTypeSelector: React.FC<WasteTypeSelectorProps> = ({ value = [], onCha
                 <Checkbox 
                   id={`waste-type-${type.id}`}
                   checked={isSelected}
-                  // Fixed: Remove the onCheckedChange handler to prevent double state updates
-                  // We're already handling the state in the parent div's onClick
+                  // No onCheckedChange handler here to prevent double state updates
                   className="data-[state=checked]:bg-green-500 border-gray-300"
                 />
               </div>
@@ -128,8 +126,7 @@ const WasteTypeSelector: React.FC<WasteTypeSelectorProps> = ({ value = [], onCha
             <Checkbox 
               id="waste-type-others"
               checked={showOtherInput}
-              // Fixed: Remove the onCheckedChange handler to prevent double state updates
-              // We're already handling the state in the parent div's onClick
+              // No onCheckedChange handler here to prevent double state updates
               className="data-[state=checked]:bg-green-500 border-gray-300"
             />
           </div>

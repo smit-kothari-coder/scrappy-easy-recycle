@@ -47,8 +47,7 @@ export const useSupabase = () => {
     // Combine date and time_slot into pickup_time
     const pickup_time = `${pickupData.date} ${pickupData.time_slot.split('(')[1].split(')')[0].split('-')[0].trim()}`;
     
-    // Insert into database - convert type array to string for database compatibility
-    // Note: If the database supports arrays, remove the JSON.stringify
+    // Insert into database
     const { data, error } = await supabase
       .from('pickups')
       .insert({
@@ -57,14 +56,21 @@ export const useSupabase = () => {
         weight: pickupData.weight,
         address: pickupData.address,
         pickup_time: pickup_time,
-        type: pickupData.type,
+        type: JSON.stringify(pickupData.type), // Convert array to string for database
         status: 'Requested'
-      } as any) // Use 'as any' temporarily to bypass type checking
+      })
       .select()
       .single();
     
     if (error) throw error;
-    return data as Pickup;
+    
+    // Convert the string back to array for the returned pickup
+    const pickupWithArrayType = {
+      ...data,
+      type: typeof data.type === 'string' ? JSON.parse(data.type) : data.type
+    };
+    
+    return pickupWithArrayType as unknown as Pickup;
   }, []);
 
   // New functions for scrapper dashboard
@@ -80,9 +86,12 @@ export const useSupabase = () => {
   }, []);
 
   const updateScrapper = useCallback(async (id: string, updates: Partial<Scrapper>) => {
+    // Handle any array fields that need to be stringified
+    const processedUpdates = { ...updates };
+    
     const { data, error } = await supabase
       .from('scrappers')
-      .update(updates as any) // Use 'as any' temporarily to bypass type checking
+      .update(processedUpdates as any) // Use 'as any' temporarily to bypass type checking
       .eq('id', id)
       .select()
       .single();
@@ -112,8 +121,14 @@ export const useSupabase = () => {
     
     if (error) throw error;
     
+    // Parse the type field from string to array for each pickup
+    const processedData = data.map(pickup => ({
+      ...pickup,
+      type: typeof pickup.type === 'string' ? JSON.parse(pickup.type) : pickup.type
+    }));
+    
     // Use explicit type assertion to handle the join result
-    return (data as unknown) as (Pickup & { users: { name: string; phone: string } })[];
+    return processedData as unknown as (Pickup & { users: { name: string; phone: string } })[];
   }, []);
 
   const acceptPickup = useCallback(async (pickupId: string, scraperId: string) => {
@@ -129,8 +144,14 @@ export const useSupabase = () => {
     
     if (error) throw error;
     
+    // Parse the type field if it's a string
+    const processedData = {
+      ...data,
+      type: typeof data.type === 'string' ? JSON.parse(data.type) : data.type
+    };
+    
     // Use explicit type assertion to handle the join result
-    return (data as unknown) as (Pickup & { users: { name: string; phone: string } });
+    return processedData as unknown as (Pickup & { users: { name: string; phone: string } });
   }, []);
 
   const rejectPickup = useCallback(async (pickupId: string) => {
@@ -152,7 +173,14 @@ export const useSupabase = () => {
       .single();
     
     if (error) throw error;
-    return data as Pickup;
+    
+    // Parse the type field if it's a string
+    const processedData = {
+      ...data,
+      type: typeof data.type === 'string' ? JSON.parse(data.type) : data.type
+    };
+    
+    return processedData as unknown as Pickup;
   }, []);
 
   const getActivePickup = useCallback(async (scraperId: string) => {
@@ -165,8 +193,16 @@ export const useSupabase = () => {
     
     if (error && error.code !== 'PGRST116') throw error;
     
+    if (!data) return null;
+    
+    // Parse the type field if it's a string
+    const processedData = {
+      ...data,
+      type: typeof data.type === 'string' ? JSON.parse(data.type) : data.type
+    };
+    
     // Use explicit type assertion to handle the join result and the null case
-    return data ? ((data as unknown) as (Pickup & { users: { name: string; phone: string } })) : null;
+    return processedData as unknown as (Pickup & { users: { name: string; phone: string } });
   }, []);
 
   // Function to logout user
