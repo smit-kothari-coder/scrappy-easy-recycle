@@ -1,5 +1,4 @@
 
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -40,7 +39,7 @@ const SignInPage = () => {
         
         <div className="scrap-card bg-white p-6 rounded-lg shadow-lg border border-gray-200">
           <h1 className="scrap-heading text-center mb-6 text-2xl md:text-3xl">
-            Sign In to ScrapEasy
+            Login to ScrapEasy
           </h1>
 
           <Form {...form}>
@@ -84,7 +83,7 @@ const SignInPage = () => {
                 className="w-full bg-scrap-blue hover:bg-scrap-blue/90 text-white mt-6 text-lg py-3 transition-transform hover:scale-105"
                 disabled={loading}
               >
-                {loading ? 'Signing In...' : 'Sign In'}
+                {loading ? 'Logging In...' : 'Login'}
               </Button>
             </form>
           </Form>

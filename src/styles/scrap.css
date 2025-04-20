@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -227,4 +226,44 @@ button:hover, a:hover {
 
 .focus\:ring-scrap-blue:focus {
   --tw-ring-color: var(--scrap-blue);
+}
+
+/* Adding additional responsive styles */
+@media (max-width: 640px) {
+  .scrap-container {
+    padding: 0 1rem;
+  }
+  
+  .scrap-heading {
+    font-size: 1.75rem;
+  }
+  
+  .scrap-card {
+    padding: 1.25rem;
+  }
+}
+
+/* Enhancing button animations */
+.scrap-btn-primary, .scrap-btn-secondary {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.3s ease;
+}
+
+.scrap-btn-primary:hover, .scrap-btn-secondary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.scrap-btn-primary:active, .scrap-btn-secondary:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* Additional styling for dashboard cards */
+.dashboard-card {
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
 }

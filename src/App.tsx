@@ -36,6 +36,7 @@ const App = () => (
             <Route path="/" element={<LandingPage />} />
             <Route path="/signup" element={<SignUpPage />} />
             <Route path="/signin" element={<SignInPage />} />
+            <Route path="/login" element={<SignInPage />} /> {/* Alias for signin */}
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/faq" element={<FAQPage />} />
             <Route path="/contact" element={<ContactPage />} />

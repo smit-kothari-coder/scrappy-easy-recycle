@@ -19,30 +19,25 @@ const LandingPage = () => {
           <div className="absolute inset-0 bg-black bg-opacity-50"></div>
           
           <div className="relative z-10 scrap-container flex flex-col items-center max-w-[600px]">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-6 text-center">
-              ScrapEasy
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-2 text-center">
+              ♻️ scrap_easy
             </h1>
+            <h2 className="text-2xl md:text-3xl font-semibold text-white mb-6 text-center">
+              Smart Scrap Collection Made Easy
+            </h2>
             <p className="text-xl text-white mb-8 text-center max-w-md">
-              Recycle smarter, earn rewards, and help the planet with our easy-to-use platform
+              Your responsible and efficient way to dispose of waste.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
               <Link to="/signup" className="w-full sm:w-auto">
                 <Button className="scrap-btn-primary w-full text-lg py-6 px-8">
-                  Sign Up
+                  Sign Up as User
                 </Button>
               </Link>
-              <Link to="/signin" className="w-full sm:w-auto">
+              <Link to="/signup?type=scrapper" className="w-full sm:w-auto">
                 <Button className="scrap-btn-secondary w-full text-lg py-6 px-8">
-                  Sign In
-                </Button>
-              </Link>
-            </div>
-            
-            <div className="mt-4">
-              <Link to="/business-search" className="w-full sm:w-auto">
-                <Button variant="outline" className="bg-white bg-opacity-20 text-white border-white w-full text-base py-4 px-6 hover:bg-opacity-30 transition-all">
-                  Search Business Locations
+                  Sign Up as Scrapper
                 </Button>
               </Link>
             </div>

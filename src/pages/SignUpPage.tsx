@@ -1,6 +1,6 @@
 
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -37,6 +37,7 @@ type BaseFormValues = {
 type ScrapperFormValues = BaseFormValues & {
   vehicleType: string;
   workingHours: string;
+  serviceArea: string;
   latitude: string;
   longitude: string;
 };
@@ -60,6 +61,7 @@ const createSignUpSchema = (role: string) => {
       ...baseSchema,
       vehicleType: z.string().min(1, "Please select a vehicle type"),
       workingHours: z.string().min(1, "Please specify your working hours"),
+      serviceArea: z.string().min(1, "Please specify your service area"),
       latitude: z.string().optional(),
       longitude: z.string().optional(),
     }).refine(data => data.password === data.confirmPassword, {
@@ -75,7 +77,9 @@ const createSignUpSchema = (role: string) => {
 };
 
 const SignUpPage = () => {
-  const [role, setRole] = useState<'user' | 'scrapper'>('user');
+  const [searchParams] = useSearchParams();
+  const initialRole = searchParams.get('type') === 'scrapper' ? 'scrapper' : 'user';
+  const [role, setRole] = useState<'user' | 'scrapper'>(initialRole as 'user' | 'scrapper');
   const { signUp, loading } = useAuth();
   const schema = createSignUpSchema(role);
 
@@ -91,16 +95,28 @@ const SignUpPage = () => {
       address: '',
       vehicleType: '',
       workingHours: '',
+      serviceArea: '',
       latitude: '',
       longitude: '',
     },
   });
+
+  useEffect(() => {
+    // Update role when URL params change
+    if (searchParams.get('type') === 'scrapper') {
+      setRole('scrapper');
+    } else {
+      setRole('user');
+    }
+  }, [searchParams]);
 
   const onSubmit = async (data: FormValues) => {
     // Separate password and userData for security
     const { password, ...userData } = data;
     await signUp(data.email, password, userData, role === 'scrapper');
   };
+
+  const pageTitle = role === 'user' ? 'Sign Up as User' : 'Sign Up as Scrapper';
 
   return (
     <div className="min-h-screen py-8 px-4 bg-gray-50 animate-fade-in">
@@ -109,7 +125,7 @@ const SignUpPage = () => {
         
         <div className="scrap-card bg-white p-6 rounded-lg shadow-lg border border-gray-200">
           <h1 className="scrap-heading text-center mb-6 text-2xl md:text-3xl">
-            Create Your Account
+            {pageTitle}
           </h1>
 
           {/* Role selection */}
@@ -119,14 +135,14 @@ const SignUpPage = () => {
               onClick={() => setRole('user')}
               className={`flex-1 py-3 text-lg transition-transform hover:scale-105 ${role === 'user' ? 'bg-scrap-green hover:bg-scrap-green/90' : 'bg-gray-200 hover:bg-gray-300 text-gray-800'}`}
             >
-              I need recycling
+              Sign Up as User
             </Button>
             <Button 
               type="button" 
               onClick={() => setRole('scrapper')}
               className={`flex-1 py-3 text-lg transition-transform hover:scale-105 ${role === 'scrapper' ? 'bg-scrap-green hover:bg-scrap-green/90' : 'bg-gray-200 hover:bg-gray-300 text-gray-800'}`}
             >
-              I'm a scrapper
+              Sign Up as Scrapper
             </Button>
           </div>
 
@@ -165,7 +181,7 @@ const SignUpPage = () => {
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="scrap-label text-base">Phone Number</FormLabel>
+                    <FormLabel className="scrap-label text-base">Mobile Number</FormLabel>
                     <FormControl>
                       <Input placeholder="10-digit mobile number" className="scrap-input text-base py-2" {...field} />
                     </FormControl>
@@ -221,7 +237,7 @@ const SignUpPage = () => {
                     name="vehicleType"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="scrap-label text-base">Vehicle Type</FormLabel>
+                        <FormLabel className="scrap-label text-base">Type of Vehicle</FormLabel>
                         <Select 
                           onValueChange={field.onChange} 
                           defaultValue={field.value}
@@ -256,35 +272,19 @@ const SignUpPage = () => {
                     )}
                   />
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="latitude"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="scrap-label text-base">Latitude (Optional)</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g., 26.9124" className="scrap-input text-base py-2" {...field} />
-                          </FormControl>
-                          <FormMessage className="scrap-error text-base" />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="longitude"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="scrap-label text-base">Longitude (Optional)</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g., 75.7873" className="scrap-input text-base py-2" {...field} />
-                          </FormControl>
-                          <FormMessage className="scrap-error text-base" />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name="serviceArea"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="scrap-label text-base">Service Area</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., North Mumbai" className="scrap-input text-base py-2" {...field} />
+                        </FormControl>
+                        <FormMessage className="scrap-error text-base" />
+                      </FormItem>
+                    )}
+                  />
                 </>
               )}
 
@@ -321,7 +321,7 @@ const SignUpPage = () => {
                 className="w-full scrap-btn-primary mt-6 text-lg py-3 transition-transform hover:scale-105"
                 disabled={loading}
               >
-                {loading ? 'Creating Account...' : 'Create Account'}
+                {loading ? 'Creating Account...' : 'Sign Up'}
               </Button>
             </form>
           </Form>
@@ -329,7 +329,7 @@ const SignUpPage = () => {
           <p className="mt-6 text-center text-gray-600 text-base">
             Already have an account?{' '}
             <Link to="/signin" className="text-scrap-blue hover:underline font-medium">
-              Sign In
+              Login
             </Link>
           </p>
         </div>
