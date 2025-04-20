@@ -46,7 +46,7 @@ export type Scrapper = {
   available: boolean;
   rating: number;
   created_at: string;
-  scrap_types?: string[];
+  scrap_types: string[];
 };
 
 export type Pickup = {
@@ -54,7 +54,7 @@ export type Pickup = {
   user_id: string;
   scrapper_id: string | null;
   weight: number;
-  type: string;
+  type: string[];
   address: string;
   pickup_time: string;
   price: number | null;
