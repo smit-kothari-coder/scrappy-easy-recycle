@@ -17,7 +17,6 @@ import { useSupabase } from '@/hooks/useSupabase';
 import { toast } from 'sonner';
 import WasteTypeSelector from './WasteTypeSelector';
 import { useAuth } from '@/hooks/useAuth';
-import { Card, CardContent } from "@/components/ui/card";
 
 const pickupSchema = z.object({
   weight: z.coerce.number().min(7, { message: "Minimum 7kg required for pickup." }),
@@ -26,7 +25,7 @@ const pickupSchema = z.object({
     required_error: "Please select a date.",
   }),
   time_slot: z.string().min(1, { message: "Please select a time slot." }),
-  type: z.array(z.string()).min(1, { message: "Please select at least one waste type." }),
+  type: z.string().min(1, { message: "Please select a waste type." }),
 });
 
 type PickupFormValues = z.infer<typeof pickupSchema>;
@@ -49,7 +48,7 @@ const SchedulePickup = () => {
       address: '',
       date: undefined,
       time_slot: '',
-      type: [],
+      type: '',
     },
   });
 
@@ -81,144 +80,137 @@ const SchedulePickup = () => {
   };
 
   return (
-    <Card className="border-none shadow-none">
-      <CardContent className="p-0">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="space-y-4">
-              <FormField
-                control={form.control}
-                name="weight"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Waste Weight (kg)</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        placeholder="Enter waste weight" 
-                        {...field} 
-                        min={7}
-                      />
-                    </FormControl>
-                    <FormMessage className="text-red-500" />
-                    {field.value < 7 && field.value > 0 && (
-                      <p className="text-amber-500 text-sm mt-1">
-                        Minimum 7kg required for pickup.
-                      </p>
-                    )}
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="address"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Pickup Address</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter full address" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            
-            <div className="space-y-4">
-              <FormField
-                control={form.control}
-                name="date"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Preferred Date</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          disabled={(date) => date < new Date()}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="time_slot"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Preferred Time</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select time slot" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {timeSlots.map((slot) => (
-                          <SelectItem key={slot} value={slot}>
-                            {slot}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            
-            <FormField
-              control={form.control}
-              name="type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <WasteTypeSelector 
-                      value={field.value}
-                      onChange={field.onChange}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="weight"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Waste Weight (kg)</FormLabel>
+              <FormControl>
+                <Input 
+                  type="number" 
+                  placeholder="Enter waste weight" 
+                  {...field} 
+                  min={7}
+                />
+              </FormControl>
+              <FormMessage className="text-red-500" />
+              {field.value < 7 && field.value > 0 && (
+                <p className="text-amber-500 text-sm mt-1">
+                  Minimum 7kg required for pickup.
+                </p>
               )}
-            />
-            
-            <Button 
-              type="submit" 
-              className="w-full bg-scrap-green hover:bg-scrap-green/90 mt-6" 
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "Scheduling..." : "Schedule Pickup"}
-            </Button>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="address"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Pickup Address</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter full address" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="date"
+          render={({ field }) => (
+            <FormItem className="flex flex-col">
+              <FormLabel>Preferred Date</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full pl-3 text-left font-normal",
+                        !field.value && "text-muted-foreground"
+                      )}
+                    >
+                      {field.value ? (
+                        format(field.value, "PPP")
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    disabled={(date) => date < new Date()}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="time_slot"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Preferred Time</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select time slot" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {timeSlots.map((slot) => (
+                    <SelectItem key={slot} value={slot}>
+                      {slot}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="type"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Waste Type</FormLabel>
+              <FormControl>
+                <WasteTypeSelector 
+                  selectedType={field.value} 
+                  onSelectType={field.onChange}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <Button 
+          type="submit" 
+          className="w-full bg-scrap-green hover:bg-scrap-green/90 mt-4" 
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Scheduling..." : "Schedule Pickup"}
+        </Button>
+      </form>
+    </Form>
   );
 };
 

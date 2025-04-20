@@ -46,7 +46,6 @@ export type Scrapper = {
   available: boolean;
   rating: number;
   created_at: string;
-  scrap_types: string[];
 };
 
 export type Pickup = {
@@ -54,15 +53,17 @@ export type Pickup = {
   user_id: string;
   scrapper_id: string | null;
   weight: number;
-  type: string[];
+  type: 'Metal' | 'Paper' | 'Plastic';
   address: string;
-  pickup_time: string;
-  price: number | null;
+  time_slot: string;
+  date: string;
+  price: number;
   status: 'Requested' | 'Scheduled' | 'En Route' | 'Arrived' | 'Completed' | 'Rejected';
   latitude: number | null;
   longitude: number | null;
   created_at: string;
-  updated_at?: string;
+  updated_at: string;
+  pickup_time: string;
 };
 
 export type BusinessLocation = {
