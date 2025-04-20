@@ -47,7 +47,7 @@ serve(async (req) => {
     const geocodedData = await geocodeAddress(businessData.address);
     console.log("Geocoding complete:", geocodedData);
 
-    // Combine all data - NOT storing in Supabase, just returning to client
+    // Combine all data
     const result = {
       ...businessData,
       latitude: geocodedData.latitude,
@@ -204,9 +204,6 @@ async function geocodeAddress(address: string) {
     }
 
     const data = await response.json();
-    
-    // Add a 1 second delay to respect Nominatim usage policy
-    await new Promise(resolve => setTimeout(resolve, 1000));
     
     if (data.length === 0) {
       console.warn("No geocoding results found for address:", address);

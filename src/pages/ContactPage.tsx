@@ -8,7 +8,6 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Mail } from 'lucide-react';
 
 const contactSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -36,10 +35,6 @@ const ContactPage = () => {
     console.log('Contact form data:', data);
     
     // In a real app, this would send the message to backend
-    // For now, we'll just create a mailto link
-    const mailtoUrl = `mailto:smit.kothari@aissmsioit.org,parin.jain@aissmsioit.org?subject=${encodeURIComponent(data.subject)}&body=${encodeURIComponent(`Name: ${data.name}\nEmail: ${data.email}\n\n${data.message}`)}`;
-    window.location.href = mailtoUrl;
-    
     setTimeout(() => {
       setIsSubmitted(true);
     }, 1000);
@@ -150,24 +145,17 @@ const ContactPage = () => {
         </div>
         
         {/* Contact information */}
-        <div className="scrap-card mb-8">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">Contact Us Directly</h2>
-          <div className="flex flex-col gap-3">
-            <a 
-              href="mailto:smit.kothari@aissmsioit.org" 
-              className="flex items-center gap-2 text-scrap-blue hover:underline"
-            >
-              <Mail className="w-4 h-4" />
-              smit.kothari@aissmsioit.org
-            </a>
-            
-            <a 
-              href="mailto:parin.jain@aissmsioit.org" 
-              className="flex items-center gap-2 text-scrap-blue hover:underline"
-            >
-              <Mail className="w-4 h-4" />
-              parin.jain@aissmsioit.org
-            </a>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+          <div className="scrap-card">
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">Email Us</h2>
+            <p className="text-gray-600">support@scrapeasy.com</p>
+            <p className="text-gray-600">business@scrapeasy.com</p>
+          </div>
+          
+          <div className="scrap-card">
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">Call Us</h2>
+            <p className="text-gray-600">Customer Support: +91-123-456-7890</p>
+            <p className="text-gray-600">Weekdays: 9 AM - 8 PM IST</p>
           </div>
         </div>
         
