@@ -9,9 +9,11 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
 import { AuthHeader } from '@/components/AuthHeader';
 import { useAuth } from '@/hooks/useAuth';
+import WasteTypeSelector from '@/components/WasteTypeSelector';
 
 const indianCities = [
   "Delhi", "Mumbai", "Kolkata", "Chennai", "Bangalore", 
@@ -22,7 +24,6 @@ const vehicleTypes = [
   "Bicycle", "Motorcycle", "Auto Rickshaw", "Small Truck", "Large Truck"
 ];
 
-// Create schema based on role
 // Define our schema types for better TypeScript support
 type BaseFormValues = {
   name: string;
@@ -38,6 +39,7 @@ type ScrapperFormValues = BaseFormValues & {
   vehicleType: string;
   workingHours: string;
   serviceArea: string;
+  scrapTypes: string[];
   latitude: string;
   longitude: string;
 };
@@ -62,6 +64,7 @@ const createSignUpSchema = (role: string) => {
       vehicleType: z.string().min(1, "Please select a vehicle type"),
       workingHours: z.string().min(1, "Please specify your working hours"),
       serviceArea: z.string().min(1, "Please specify your service area"),
+      scrapTypes: z.array(z.string()).min(1, "Please select at least one scrap type"),
       latitude: z.string().optional(),
       longitude: z.string().optional(),
     }).refine(data => data.password === data.confirmPassword, {
@@ -96,6 +99,7 @@ const SignUpPage = () => {
       vehicleType: '',
       workingHours: '',
       serviceArea: '',
+      scrapTypes: [],
       latitude: '',
       longitude: '',
     },
@@ -123,133 +127,115 @@ const SignUpPage = () => {
       <div className="scrap-container max-w-[600px] mx-auto">
         <AuthHeader />
         
-        <div className="scrap-card bg-white p-6 rounded-lg shadow-lg border border-gray-200">
-          <h1 className="scrap-heading text-center mb-6 text-2xl md:text-3xl">
-            {pageTitle}
-          </h1>
+        <Card className="overflow-hidden">
+          <CardHeader className="bg-white p-6 border-b">
+            <h1 className="text-center text-2xl md:text-3xl font-bold">
+              {pageTitle}
+            </h1>
+            
+            {/* Role selection */}
+            <div className="flex flex-col sm:flex-row gap-3 mt-6">
+              <Button 
+                type="button" 
+                onClick={() => setRole('user')}
+                className={`flex-1 py-3 text-lg transition-transform hover:scale-105 ${role === 'user' ? 'bg-scrap-green hover:bg-scrap-green/90' : 'bg-gray-200 hover:bg-gray-300 text-gray-800'}`}
+              >
+                Sign Up as User
+              </Button>
+              <Button 
+                type="button" 
+                onClick={() => setRole('scrapper')}
+                className={`flex-1 py-3 text-lg transition-transform hover:scale-105 ${role === 'scrapper' ? 'bg-scrap-green hover:bg-scrap-green/90' : 'bg-gray-200 hover:bg-gray-300 text-gray-800'}`}
+              >
+                Sign Up as Scrapper
+              </Button>
+            </div>
+          </CardHeader>
 
-          {/* Role selection */}
-          <div className="flex flex-col sm:flex-row gap-3 mb-6">
-            <Button 
-              type="button" 
-              onClick={() => setRole('user')}
-              className={`flex-1 py-3 text-lg transition-transform hover:scale-105 ${role === 'user' ? 'bg-scrap-green hover:bg-scrap-green/90' : 'bg-gray-200 hover:bg-gray-300 text-gray-800'}`}
-            >
-              Sign Up as User
-            </Button>
-            <Button 
-              type="button" 
-              onClick={() => setRole('scrapper')}
-              className={`flex-1 py-3 text-lg transition-transform hover:scale-105 ${role === 'scrapper' ? 'bg-scrap-green hover:bg-scrap-green/90' : 'bg-gray-200 hover:bg-gray-300 text-gray-800'}`}
-            >
-              Sign Up as Scrapper
-            </Button>
-          </div>
+          <CardContent className="p-6">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <div className="space-y-4 mb-6">
+                  <h2 className="text-lg font-medium">Personal Details</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="scrap-label text-base">Full Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter your name" className="scrap-input text-base py-2" {...field} />
+                          </FormControl>
+                          <FormMessage className="scrap-error text-base" />
+                        </FormItem>
+                      )}
+                    />
 
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="scrap-label text-base">Full Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter your name" className="scrap-input text-base py-2" {...field} />
-                    </FormControl>
-                    <FormMessage className="scrap-error text-base" />
-                  </FormItem>
-                )}
-              />
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="scrap-label text-base">Email Address</FormLabel>
+                          <FormControl>
+                            <Input type="email" placeholder="Enter your email" className="scrap-input text-base py-2" {...field} />
+                          </FormControl>
+                          <FormMessage className="scrap-error text-base" />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
 
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="scrap-label text-base">Email Address</FormLabel>
-                    <FormControl>
-                      <Input type="email" placeholder="Enter your email" className="scrap-input text-base py-2" {...field} />
-                    </FormControl>
-                    <FormMessage className="scrap-error text-base" />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="scrap-label text-base">Mobile Number</FormLabel>
-                    <FormControl>
-                      <Input placeholder="10-digit mobile number" className="scrap-input text-base py-2" {...field} />
-                    </FormControl>
-                    <FormMessage className="scrap-error text-base" />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="address"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="scrap-label text-base">Address</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter your full address" className="scrap-input text-base py-2" {...field} />
-                    </FormControl>
-                    <FormMessage className="scrap-error text-base" />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="city"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="scrap-label text-base">City</FormLabel>
-                    <Select 
-                      onValueChange={field.onChange} 
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="scrap-input text-base py-2">
-                          <SelectValue placeholder="Select your city" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {indianCities.map((city) => (
-                          <SelectItem key={city} value={city}>{city}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage className="scrap-error text-base" />
-                  </FormItem>
-                )}
-              />
-
-              {role === 'scrapper' && (
-                <>
                   <FormField
                     control={form.control}
-                    name="vehicleType"
+                    name="phone"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="scrap-label text-base">Type of Vehicle</FormLabel>
+                        <FormLabel className="scrap-label text-base">Mobile Number</FormLabel>
+                        <FormControl>
+                          <Input placeholder="10-digit mobile number" className="scrap-input text-base py-2" {...field} />
+                        </FormControl>
+                        <FormMessage className="scrap-error text-base" />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="space-y-4 mb-6">
+                  <h2 className="text-lg font-medium">Address Information</h2>
+                  <FormField
+                    control={form.control}
+                    name="address"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="scrap-label text-base">Address</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter your full address" className="scrap-input text-base py-2" {...field} />
+                        </FormControl>
+                        <FormMessage className="scrap-error text-base" />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="city"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="scrap-label text-base">City</FormLabel>
                         <Select 
                           onValueChange={field.onChange} 
                           defaultValue={field.value}
                         >
                           <FormControl>
                             <SelectTrigger className="scrap-input text-base py-2">
-                              <SelectValue placeholder="Select your vehicle" />
+                              <SelectValue placeholder="Select your city" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {vehicleTypes.map((vehicle) => (
-                              <SelectItem key={vehicle} value={vehicle}>{vehicle}</SelectItem>
+                            {indianCities.map((city) => (
+                              <SelectItem key={city} value={city}>{city}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
@@ -257,82 +243,139 @@ const SignUpPage = () => {
                       </FormItem>
                     )}
                   />
+                </div>
 
-                  <FormField
-                    control={form.control}
-                    name="workingHours"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="scrap-label text-base">Working Hours</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g., 9 AM - 6 PM" className="scrap-input text-base py-2" {...field} />
-                        </FormControl>
-                        <FormMessage className="scrap-error text-base" />
-                      </FormItem>
-                    )}
-                  />
+                {role === 'scrapper' && (
+                  <>
+                    <div className="space-y-4 mb-6">
+                      <h2 className="text-lg font-medium">Scrapper Details</h2>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="vehicleType"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="scrap-label text-base">Type of Vehicle</FormLabel>
+                              <Select 
+                                onValueChange={field.onChange} 
+                                defaultValue={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger className="scrap-input text-base py-2">
+                                    <SelectValue placeholder="Select your vehicle" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {vehicleTypes.map((vehicle) => (
+                                    <SelectItem key={vehicle} value={vehicle}>{vehicle}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage className="scrap-error text-base" />
+                            </FormItem>
+                          )}
+                        />
 
-                  <FormField
-                    control={form.control}
-                    name="serviceArea"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="scrap-label text-base">Service Area</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g., North Mumbai" className="scrap-input text-base py-2" {...field} />
-                        </FormControl>
-                        <FormMessage className="scrap-error text-base" />
-                      </FormItem>
-                    )}
-                  />
-                </>
-              )}
+                        <FormField
+                          control={form.control}
+                          name="workingHours"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="scrap-label text-base">Working Hours</FormLabel>
+                              <FormControl>
+                                <Input placeholder="e.g., 9 AM - 6 PM" className="scrap-input text-base py-2" {...field} />
+                              </FormControl>
+                              <FormMessage className="scrap-error text-base" />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
 
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="scrap-label text-base">Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="Create a password (min 6 characters)" className="scrap-input text-base py-2" {...field} />
-                    </FormControl>
-                    <FormMessage className="scrap-error text-base" />
-                  </FormItem>
+                      <FormField
+                        control={form.control}
+                        name="serviceArea"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="scrap-label text-base">Service Area</FormLabel>
+                            <FormControl>
+                              <Input placeholder="e.g., North Mumbai" className="scrap-input text-base py-2" {...field} />
+                            </FormControl>
+                            <FormMessage className="scrap-error text-base" />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="scrapTypes"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="scrap-label text-base">Scrap Types Collected</FormLabel>
+                            <FormControl>
+                              <WasteTypeSelector 
+                                value={field.value} 
+                                onChange={field.onChange} 
+                              />
+                            </FormControl>
+                            <FormMessage className="scrap-error text-base" />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </>
                 )}
-              />
 
-              <FormField
-                control={form.control}
-                name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="scrap-label text-base">Confirm Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="Confirm your password" className="scrap-input text-base py-2" {...field} />
-                    </FormControl>
-                    <FormMessage className="scrap-error text-base" />
-                  </FormItem>
-                )}
-              />
-              
-              <Button 
-                type="submit" 
-                className="w-full scrap-btn-primary mt-6 text-lg py-3 transition-transform hover:scale-105"
-                disabled={loading}
-              >
-                {loading ? 'Creating Account...' : 'Sign Up'}
-              </Button>
-            </form>
-          </Form>
-          
-          <p className="mt-6 text-center text-gray-600 text-base">
-            Already have an account?{' '}
-            <Link to="/signin" className="text-scrap-blue hover:underline font-medium">
-              Login
-            </Link>
-          </p>
-        </div>
+                <div className="space-y-4 mb-6">
+                  <h2 className="text-lg font-medium">Security</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="scrap-label text-base">Password</FormLabel>
+                          <FormControl>
+                            <Input type="password" placeholder="Create a password (min 6 characters)" className="scrap-input text-base py-2" {...field} />
+                          </FormControl>
+                          <FormMessage className="scrap-error text-base" />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="confirmPassword"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="scrap-label text-base">Confirm Password</FormLabel>
+                          <FormControl>
+                            <Input type="password" placeholder="Confirm your password" className="scrap-input text-base py-2" {...field} />
+                          </FormControl>
+                          <FormMessage className="scrap-error text-base" />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+                
+                <Button 
+                  type="submit" 
+                  className="w-full scrap-btn-primary mt-6 text-lg py-3 transition-transform hover:scale-105"
+                  disabled={loading}
+                >
+                  {loading ? 'Creating Account...' : 'Sign Up'}
+                </Button>
+              </form>
+            </Form>
+            
+            <p className="mt-6 text-center text-gray-600 text-base">
+              Already have an account?{' '}
+              <Link to="/signin" className="text-scrap-blue hover:underline font-medium">
+                Login
+              </Link>
+            </p>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
