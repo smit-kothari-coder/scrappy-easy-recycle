@@ -38,6 +38,14 @@ const LandingPage = () => {
                 </Button>
               </Link>
             </div>
+            
+            <div className="mt-4">
+              <Link to="/business-search" className="w-full sm:w-auto">
+                <Button variant="outline" className="bg-white bg-opacity-20 text-white border-white w-full text-base py-4 px-6 hover:bg-opacity-30 transition-all">
+                  Search Business Locations
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -73,6 +81,7 @@ const LandingPage = () => {
           <div className="flex justify-center gap-4 mt-2">
             <Link to="/faq" className="text-scrap-blue hover:underline text-base">FAQ</Link>
             <Link to="/contact" className="text-scrap-blue hover:underline text-base">Contact Us</Link>
+            <Link to="/business-search" className="text-scrap-blue hover:underline text-base">Business Finder</Link>
           </div>
         </div>
       </footer>

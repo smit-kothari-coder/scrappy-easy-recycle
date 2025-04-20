@@ -17,6 +17,7 @@ import FAQPage from "./pages/FAQPage";
 import ContactPage from "./pages/ContactPage";
 import UserProfilePage from "./pages/UserProfilePage";
 import ScrapperProfilePage from "./pages/ScrapperProfilePage";
+import BusinessSearchPage from "./pages/BusinessSearchPage";
 import { AuthProvider } from "./hooks/useAuth";
 import RequireAuth from "./components/RequireAuth";
 import "./styles/scrap.css";
@@ -38,6 +39,7 @@ const App = () => (
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/faq" element={<FAQPage />} />
             <Route path="/contact" element={<ContactPage />} />
+            <Route path="/business-search" element={<BusinessSearchPage />} />
             
             {/* Protected User Routes */}
             <Route 
