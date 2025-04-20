@@ -45,14 +45,16 @@ export const useSupabase = () => {
     time_slot: string;
     type: string;
   }) => {
+    // Combine date and time_slot into pickup_time
+    const pickup_time = `${pickupData.date} ${pickupData.time_slot.split('(')[1].split(')')[0].split('-')[0].trim()}`;
+    
     const { data, error } = await supabase
       .from('pickups')
       .insert({
         user_id: pickupData.user_id,
         weight: pickupData.weight,
         address: pickupData.address,
-        date: pickupData.date,
-        time_slot: pickupData.time_slot,
+        pickup_time: pickup_time,
         type: pickupData.type,
         status: 'Requested'
       })

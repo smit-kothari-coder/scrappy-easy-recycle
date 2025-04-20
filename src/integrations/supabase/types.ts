@@ -216,6 +216,7 @@ export type Database = {
           longitude: number | null
           name: string
           phone: string
+          rating: number | null
           vehicle_type: string | null
         }
         Insert: {
@@ -229,6 +230,7 @@ export type Database = {
           longitude?: number | null
           name: string
           phone: string
+          rating?: number | null
           vehicle_type?: string | null
         }
         Update: {
@@ -242,6 +244,7 @@ export type Database = {
           longitude?: number | null
           name?: string
           phone?: string
+          rating?: number | null
           vehicle_type?: string | null
         }
         Relationships: []
