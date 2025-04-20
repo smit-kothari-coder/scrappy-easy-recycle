@@ -36,6 +36,33 @@ export const useSupabase = () => {
     return data;
   }, []);
 
+  // Create a new pickup request
+  const createPickupRequest = useCallback(async (pickupData: {
+    user_id: string;
+    weight: number;
+    address: string;
+    date: string;
+    time_slot: string;
+    type: string;
+  }) => {
+    const { data, error } = await supabase
+      .from('pickups')
+      .insert({
+        user_id: pickupData.user_id,
+        weight: pickupData.weight,
+        address: pickupData.address,
+        date: pickupData.date,
+        time_slot: pickupData.time_slot,
+        type: pickupData.type,
+        status: 'Requested'
+      })
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  }, []);
+
   // New functions for scrapper dashboard
   const getScrapper = useCallback(async (scrapperEmail: string) => {
     const { data, error } = await supabase
@@ -162,6 +189,7 @@ export const useSupabase = () => {
     getCurrentUser,
     getProfile,
     updateProfile,
+    createPickupRequest,
     getScrapper,
     updateScrapper,
     updateScrappperLocation,

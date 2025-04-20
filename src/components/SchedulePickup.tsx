@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -193,8 +192,8 @@ const SchedulePickup = () => {
               <FormLabel>Waste Type</FormLabel>
               <FormControl>
                 <WasteTypeSelector 
-                  selectedType={field.value} 
-                  onSelectType={field.onChange}
+                  value={field.value} 
+                  onChange={field.onChange}
                 />
               </FormControl>
               <FormMessage />
