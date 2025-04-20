@@ -17,6 +17,16 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
+// Define a custom icon to mimic Ola/Uber style
+const createCustomIcon = () => {
+  return L.icon({
+    iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+  });
+};
+
 interface BusinessLocation {
   name: string;
   address: string;
@@ -91,7 +101,7 @@ const BusinessLocationSearch: React.FC = () => {
           className="whitespace-nowrap"
         >
           {isLoading ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : <MapPin className="mr-2 h-4 w-4" />}
-          {isLoading ? 'Searching...' : 'Search Location'}
+          {isLoading ? 'Searching...' : 'Scrape Data'}
         </Button>
       </div>
 
@@ -102,30 +112,37 @@ const BusinessLocationSearch: React.FC = () => {
       )}
 
       <div className="h-[400px] w-full rounded-md overflow-hidden border">
-        <MapContainer 
-          style={{ height: '400px', width: '100%' }}
-          // We're using MapContainer as a JSX element, not spreading props
-          // which is causing TypeScript errors
-        >
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            // Remove attribution prop to fix TypeScript error
-          />
-          
-          {businessLocation && (
-            <Marker position={[businessLocation.latitude, businessLocation.longitude]}>
-              <Popup>
-                <div className="p-2">
-                  <h3 className="font-semibold text-base">{businessLocation.name}</h3>
-                  <p className="text-sm mt-1">{businessLocation.address}</p>
-                  {businessLocation.summary && (
-                    <p className="text-xs mt-2 text-gray-600">{businessLocation.summary}</p>
-                  )}
-                </div>
-              </Popup>
-            </Marker>
-          )}
-        </MapContainer>
+        {typeof window !== 'undefined' && (
+          <MapContainer 
+            style={{ height: '400px', width: '100%' }}
+          >
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            
+            {businessLocation && (
+              <Marker 
+                position={[businessLocation.latitude, businessLocation.longitude]}
+                icon={createCustomIcon()}
+              >
+                <Popup>
+                  <div className="p-2">
+                    <h3 className="font-semibold text-base">{businessLocation.name}</h3>
+                    <p className="text-sm mt-1">{businessLocation.address}</p>
+                    {businessLocation.summary && (
+                      <p className="text-xs mt-2 text-gray-600">{businessLocation.summary}</p>
+                    )}
+                  </div>
+                </Popup>
+              </Marker>
+            )}
+            
+            {/* Attribution for OpenStreetMap */}
+            <div className="absolute bottom-0 right-0 z-[1000] bg-white bg-opacity-70 px-1 text-xs">
+              © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors
+            </div>
+          </MapContainer>
+        )}
       </div>
     </div>
   );
