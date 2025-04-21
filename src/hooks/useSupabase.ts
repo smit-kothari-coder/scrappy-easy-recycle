@@ -49,14 +49,18 @@ export const useSupabase = () => {
     // Combine date and time_slot into pickup_time
     const pickup_time = `${pickupData.date} ${pickupData.time_slot.split('(')[1].split(')')[0].split('-')[0].trim()}`;
     
+    // Join array of types to a comma-separated string
+    const typeString = Array.isArray(pickupData.type) ? pickupData.type.join(',') : pickupData.type;
+    
     const { data, error } = await supabase
       .from('pickups')
       .insert({
+        id: uuidv4(), // Generate UUID for the id field which is required
         user_id: pickupData.user_id,
         weight: pickupData.weight,
         address: pickupData.address,
         pickup_time: pickup_time,
-        type: pickupData.type.join(','),
+        type: typeString,
         status: 'Requested'
       })
       .select()
