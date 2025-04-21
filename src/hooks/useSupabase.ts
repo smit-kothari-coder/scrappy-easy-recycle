@@ -52,12 +52,11 @@ export const useSupabase = () => {
     const { data, error } = await supabase
       .from('pickups')
       .insert({
-        id: uuidv4(), // Add UUID for the id field
         user_id: pickupData.user_id,
         weight: pickupData.weight,
         address: pickupData.address,
         pickup_time: pickup_time,
-        type: pickupData.type.join(','), // Join array into comma-separated string
+        type: pickupData.type.join(','),
         status: 'Requested'
       })
       .select()

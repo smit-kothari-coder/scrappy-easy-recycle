@@ -118,14 +118,9 @@ const SignUpPage = () => {
     // Convert scrapTypes array to comma-separated string if present
     let userData = { ...data };
     if (role === 'scrapper' && 'scrapTypes' in userData) {
-      // Ensure scrapTypes is treated as an array
-      const scrapTypesArray = Array.isArray((userData as ScrapperFormValues).scrapTypes) 
-        ? (userData as ScrapperFormValues).scrapTypes 
-        : [];
-      
       userData = { 
         ...userData, 
-        scrapTypes: scrapTypesArray.join(',')
+        scrapTypes: (userData as ScrapperFormValues).scrapTypes.join(',')
       };
     }
     
