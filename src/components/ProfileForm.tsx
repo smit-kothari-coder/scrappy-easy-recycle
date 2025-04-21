@@ -1,21 +1,24 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import WasteTypeSelector from './WasteTypeSelector';
 
 const baseSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Please enter a valid email"),
   phone: z.string().min(10, "Phone number must be at least 10 digits"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: z.string().optional().refine(val => !val || val.length >= 6, {
+    message: "Password must be at least 6 characters if provided",
+  }),
 });
 
 const userSchema = baseSchema.extend({
@@ -25,6 +28,7 @@ const userSchema = baseSchema.extend({
 const scrapperSchema = baseSchema.extend({
   vehicleType: z.string().min(1, "Please select a vehicle type"),
   hours: z.string().min(1, "Please enter your working hours"),
+  scrapTypes: z.array(z.string()).min(1, "Please select at least one scrap type"),
 });
 
 type BaseFormData = z.infer<typeof baseSchema>;
@@ -33,34 +37,50 @@ type ScrapperFormData = z.infer<typeof scrapperSchema>;
 
 interface ProfileFormProps {
   type: 'user' | 'scrapper';
-  initialData?: UserFormData | ScrapperFormData;
-  onSubmit: (data: UserFormData | ScrapperFormData) => void;
+  initialData?: Partial<UserFormData | ScrapperFormData>;
+  onSubmit: (data: UserFormData | ScrapperFormData) => Promise<void>;
 }
 
 export function ProfileForm({ type, initialData, onSubmit }: ProfileFormProps) {
-  const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const schema = type === 'user' ? userSchema : scrapperSchema;
   const form = useForm<UserFormData | ScrapperFormData>({
     resolver: zodResolver(schema),
-    defaultValues: initialData,
+    defaultValues: {
+      name: '',
+      email: '',
+      phone: '',
+      password: '',
+      ...(type === 'user' ? { address: '' } : {}),
+      ...(type === 'scrapper' ? { 
+        vehicleType: '',
+        hours: '',
+        scrapTypes: []
+      } : {}),
+      ...initialData,
+    },
   });
+
+  // Update form when initial data changes (e.g., after data is loaded)
+  useEffect(() => {
+    if (initialData) {
+      Object.entries(initialData).forEach(([key, value]) => {
+        if (value !== undefined) {
+          form.setValue(key as any, value);
+        }
+      });
+    }
+  }, [initialData, form]);
 
   const handleSubmit = async (data: UserFormData | ScrapperFormData) => {
     setIsSubmitting(true);
     try {
       await onSubmit(data);
-      toast({
-        title: "Success",
-        description: "Profile updated successfully!",
-      });
+      toast.success("Profile updated successfully!");
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update profile. Please try again.",
-        variant: "destructive",
-      });
+      console.error("Error updating profile:", error);
+      toast.error("Failed to update profile. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -175,6 +195,23 @@ export function ProfileForm({ type, initialData, onSubmit }: ProfileFormProps) {
                         <FormLabel className="scrap-label">Working Hours</FormLabel>
                         <FormControl>
                           <Input placeholder="e.g., 9 AM - 5 PM" className="scrap-input" {...field} />
+                        </FormControl>
+                        <FormMessage className="scrap-error" />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="scrapTypes"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="scrap-label">Scrap Types You Collect</FormLabel>
+                        <FormControl>
+                          <WasteTypeSelector 
+                            value={field.value} 
+                            onChange={field.onChange}
+                          />
                         </FormControl>
                         <FormMessage className="scrap-error" />
                       </FormItem>

@@ -1,6 +1,7 @@
 
 import { useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { v4 as uuidv4 } from 'uuid';
 import type { Database } from '@/integrations/supabase/types';
 import { Pickup, Scrapper } from '@/types';
 
@@ -43,7 +44,7 @@ export const useSupabase = () => {
     address: string;
     date: string;
     time_slot: string;
-    type: string;
+    type: string[];
   }) => {
     // Combine date and time_slot into pickup_time
     const pickup_time = `${pickupData.date} ${pickupData.time_slot.split('(')[1].split(')')[0].split('-')[0].trim()}`;
@@ -55,7 +56,7 @@ export const useSupabase = () => {
         weight: pickupData.weight,
         address: pickupData.address,
         pickup_time: pickup_time,
-        type: pickupData.type,
+        type: pickupData.type.join(','),
         status: 'Requested'
       })
       .select()
@@ -77,16 +78,34 @@ export const useSupabase = () => {
     return data as unknown as Scrapper;
   }, []);
 
-  const updateScrapper = useCallback(async (id: string, updates: Partial<Omit<Scrapper, 'availability_hours'> & { availability_hours: string }>) => {
-    const { data, error } = await supabase
-      .from('scrappers')
-      .update(updates as any)
-      .eq('id', id)
-      .select()
-      .single();
-    
-    if (error) throw error;
-    return data as unknown as Scrapper;
+  const updateScrapper = useCallback(async (id: string, updates: Partial<Omit<Scrapper, 'availability_hours'> & { availability_hours: string, scrap_types?: string[] }>) => {
+    // If scrap_types is provided, convert it to a comma-separated string
+    if (updates.scrap_types) {
+      const formattedUpdates = {
+        ...updates,
+        scrap_types: updates.scrap_types.join(',')
+      };
+      
+      const { data, error } = await supabase
+        .from('scrappers')
+        .update(formattedUpdates as any)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data as unknown as Scrapper;
+    } else {
+      const { data, error } = await supabase
+        .from('scrappers')
+        .update(updates as any)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data as unknown as Scrapper;
+    }
   }, []);
 
   const updateScrappperLocation = useCallback(async (id: string, latitude: number, longitude: number) => {

@@ -46,7 +46,7 @@ export type Scrapper = {
   available: boolean;
   rating: number;
   created_at: string;
-  scrap_types?: string[];
+  scrap_types?: string | string[];
 };
 
 export type Pickup = {

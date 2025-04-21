@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 import { AuthHeader } from '@/components/AuthHeader';
 import { useAuth } from '@/hooks/useAuth';
+import WasteTypeSelector from '@/components/WasteTypeSelector';
 
 const indianCities = [
   "Delhi", "Mumbai", "Kolkata", "Chennai", "Bangalore", 
@@ -38,6 +39,7 @@ type ScrapperFormValues = BaseFormValues & {
   vehicleType: string;
   workingHours: string;
   serviceArea: string;
+  scrapTypes: string[];
   latitude: string;
   longitude: string;
 };
@@ -62,6 +64,7 @@ const createSignUpSchema = (role: string) => {
       vehicleType: z.string().min(1, "Please select a vehicle type"),
       workingHours: z.string().min(1, "Please specify your working hours"),
       serviceArea: z.string().min(1, "Please specify your service area"),
+      scrapTypes: z.array(z.string()).min(1, "Please select at least one scrap type"),
       latitude: z.string().optional(),
       longitude: z.string().optional(),
     }).refine(data => data.password === data.confirmPassword, {
@@ -96,6 +99,7 @@ const SignUpPage = () => {
       vehicleType: '',
       workingHours: '',
       serviceArea: '',
+      scrapTypes: [],
       latitude: '',
       longitude: '',
     },
@@ -111,9 +115,18 @@ const SignUpPage = () => {
   }, [searchParams]);
 
   const onSubmit = async (data: FormValues) => {
+    // Convert scrapTypes array to comma-separated string if present
+    let userData = { ...data };
+    if (role === 'scrapper' && 'scrapTypes' in userData) {
+      userData = { 
+        ...userData, 
+        scrapTypes: (userData as ScrapperFormValues).scrapTypes.join(',')
+      };
+    }
+    
     // Separate password and userData for security
-    const { password, ...userData } = data;
-    await signUp(data.email, password, userData, role === 'scrapper');
+    const { password, ...userDataWithoutPassword } = userData;
+    await signUp(data.email, password, userDataWithoutPassword, role === 'scrapper');
   };
 
   const pageTitle = role === 'user' ? 'Sign Up as User' : 'Sign Up as Scrapper';
@@ -285,6 +298,23 @@ const SignUpPage = () => {
                       </FormItem>
                     )}
                   />
+
+                  <FormField
+                    control={form.control}
+                    name="scrapTypes"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="scrap-label text-base">Scrap Types You Collect</FormLabel>
+                        <FormControl>
+                          <WasteTypeSelector 
+                            value={field.value} 
+                            onChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormMessage className="scrap-error text-base" />
+                      </FormItem>
+                    )}
+                  />
                 </>
               )}
 
@@ -332,6 +362,11 @@ const SignUpPage = () => {
               Login
             </Link>
           </p>
+
+          <div className="mt-6 text-center">
+            <p className="text-gray-600">For any queries, please contact:</p>
+            <p className="font-medium text-scrap-blue">smit.kothari@aissmsioit.org</p>
+          </div>
         </div>
       </div>
     </div>
