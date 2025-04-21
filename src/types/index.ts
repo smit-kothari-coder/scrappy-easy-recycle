@@ -34,6 +34,7 @@ export type RedeemedReward = {
 };
 
 export type Scrapper = {
+  [x: string]: any;
   id: string;
   name: string;
   email: string;

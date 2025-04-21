@@ -65,16 +65,47 @@ NavigationMenuTrigger.displayName = NavigationMenuPrimitive.Trigger.displayName
 const NavigationMenuContent = React.forwardRef<
   React.ElementRef<typeof NavigationMenuPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Content>
->(({ className, ...props }, ref) => (
+>(({ className, children, ...props }, ref) => (
   <NavigationMenuPrimitive.Content
     ref={ref}
     className={cn(
-      "left-0 top-0 w-full data-[motion^=from-]:animate-in data-[motion^=to-]:animate-out data-[motion^=from-]:fade-in data-[motion^=to-]:fade-out data-[motion=from-end]:slide-in-from-right-52 data-[motion=from-start]:slide-in-from-left-52 data-[motion=to-end]:slide-out-to-right-52 data-[motion=to-start]:slide-out-to-left-52 md:absolute md:w-auto ",
+      "left-0 top-0 w-full md:absolute md:w-auto p-4 bg-white rounded-md shadow-lg min-w-[220px] flex flex-col items-center gap-4",
+      "data-[motion^=from-]:animate-in data-[motion^=to-]:animate-out",
+      "data-[motion^=from-]:fade-in data-[motion^=to-]:fade-out",
+      "data-[motion=from-end]:slide-in-from-right-52 data-[motion=from-start]:slide-in-from-left-52",
+      "data-[motion=to-end]:slide-out-to-right-52 data-[motion=to-start]:slide-out-to-left-52",
       className
     )}
     {...props}
-  />
+  >
+    {children}
+
+    {/* Profile Button */}
+    <a
+      href="/profile"
+      className="flex items-center gap-2 px-4 py-2 rounded-md bg-accent text-accent-foreground hover:bg-accent/80 transition"
+    >
+      <img
+        src="/profile.png"
+        alt="Profile"
+        className="h-6 w-6 rounded-full object-cover"
+      />
+      <span className="text-sm font-medium">Go to Profile</span>
+    </a>
+
+    {/* Placeholder for Accept/Deny */}
+    <div className="flex gap-2 mt-2">
+      <button className="px-3 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600">
+        Accept
+      </button>
+      <button className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600">
+        Deny
+      </button>
+    </div>
+  </NavigationMenuPrimitive.Content>
 ))
+
+
 NavigationMenuContent.displayName = NavigationMenuPrimitive.Content.displayName
 
 const NavigationMenuLink = NavigationMenuPrimitive.Link

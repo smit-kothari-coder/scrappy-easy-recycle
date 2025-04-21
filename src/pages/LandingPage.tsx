@@ -1,7 +1,7 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { User, Recycle, Calendar, Check, Award, Star, StarOff, StarHalf, Info } from "lucide-react";
+import { User, Recycle, Calendar, Check, Award, Star, StarOff, StarHalf, Info , Battery} from "lucide-react";
+import { Box, Cpu, BookOpen } from "lucide-react";
 
 const reviews = [
   {
@@ -53,6 +53,12 @@ const LandingPage = () => {
             Your effortless and eco-friendly way to get rid of household and business scrap.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+            <Link to="/signin" className="w-full sm:w-auto">
+              <Button className="scrap-btn-primary w-full flex items-center justify-center gap-2 text-lg py-5 px-8 shadow-md">
+                <User size={22} /> Sign In
+              </Button>
+            </Link>
+
             <Link to="/signup" className="w-full sm:w-auto">
               <Button className="scrap-btn-primary w-full flex items-center justify-center gap-2 text-lg py-5 px-8 shadow-md">
                 <User size={22} /> Sign Up as User
@@ -64,6 +70,29 @@ const LandingPage = () => {
               </Button>
             </Link>
           </div>
+
+        </div>
+      </section>
+
+      {/* Scrap Categories Section */}
+      <section className="py-12 bg-white text-center">
+        <h2 className="text-3xl font-bold text-gray-800 mb-6">What We Collect</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 max-w-5xl mx-auto px-4">
+          {[
+            { icon: <Recycle />, label: "Plastic" },
+            { icon: <Battery />, label: "E-Waste" },
+            { icon: <Box />, label: "Cardboard" },
+            { icon: <Cpu />, label: "Metal" },
+            { icon: <BookOpen />, label: "Paper" },
+          ].map(({ icon, label }, i) => (
+            <div
+              key={i}
+              className="p-4 bg-[#f9f9f9] rounded-xl shadow text-center flex flex-col items-center justify-center"
+            >
+              <div className="text-scrap-green mb-2 text-3xl">{icon}</div>
+              <p className="font-semibold text-sm">{label}</p>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -105,11 +134,11 @@ const LandingPage = () => {
       <section className="w-full py-12 bg-[#F1F0FB] flex flex-col items-center">
         <div className="flex flex-col md:flex-row gap-7 items-center max-w-5xl w-full justify-center px-2 sm:px-0">
           <div className="md:w-1/2 mb-5 md:mb-0">
-            <img 
+            <img
               src="https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=600&q=80"
               alt="ScrapEasy Dashboard"
               className="rounded-xl shadow-lg w-full object-cover md:max-w-sm"
-              style={{maxHeight: 260}}
+              style={{ maxHeight: 260 }}
             />
           </div>
           <div className="md:w-2/3 flex flex-col items-start">
@@ -146,7 +175,7 @@ const LandingPage = () => {
           ))}
         </div>
       </section>
-      
+
       {/* Footer */}
       <footer className="bg-gray-100 py-6 mt-auto">
         <div className="scrap-container text-center max-w-[600px] mx-auto">

@@ -1,9 +1,9 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { toast } from 'sonner';
 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -13,9 +13,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { AuthHeader } from '@/components/AuthHeader';
 import { useAuth } from '@/hooks/useAuth';
 import WasteTypeSelector from '@/components/WasteTypeSelector';
+import { useSupabase } from '@/hooks/useSupabase';
 
 const indianCities = [
-  "Delhi", "Mumbai", "Kolkata", "Chennai", "Bangalore", 
+  "Delhi", "Mumbai", "Kolkata", "Chennai", "Bangalore",
   "Hyderabad", "Ahmedabad", "Pune", "Jaipur", "Lucknow"
 ];
 
@@ -42,12 +43,40 @@ type ScrapperFormValues = BaseFormValues & {
   scrapTypes: string[];
   latitude: string;
   longitude: string;
+  aadharNumber: string;
+  panNumber: string;
+  aadharImage: File | null;
+  panImage: File | null;
 };
 
-// Union type for our form
-type FormValues = BaseFormValues | ScrapperFormValues;
 
-const createSignUpSchema = (role: string) => {
+// Union type for our form
+type FormValues = {
+  name: string;
+  email: string;
+  phone: string;
+  password: string;
+  confirmPassword: string;
+  city: string;
+  address: string;
+} & (
+    | { role: 'user' }
+    | {
+      role: 'scrapper';
+      vehicleType: string;
+      workingHours: string;
+      serviceArea: string;
+      scrapTypes: string[];
+      latitude?: string;
+      longitude?: string;
+      aadharNumber: string;
+      panNumber: string;
+      aadharImage: File | null;
+      panImage: File | null;
+    }
+  );
+
+const createSignUpSchema = (role: 'user' | 'scrapper') => {
   const baseSchema = {
     name: z.string().min(2, "Name must be at least 2 characters"),
     email: z.string().email("Please enter a valid email address"),
@@ -58,25 +87,31 @@ const createSignUpSchema = (role: string) => {
     address: z.string().min(5, "Please enter a valid address"),
   };
 
-  if (role === "scrapper") {
-    return z.object({
+  return role === 'scrapper'
+    ? z.object({
       ...baseSchema,
+      role: z.literal('scrapper'),
       vehicleType: z.string().min(1, "Please select a vehicle type"),
       workingHours: z.string().min(1, "Please specify your working hours"),
       serviceArea: z.string().min(1, "Please specify your service area"),
       scrapTypes: z.array(z.string()).min(1, "Please select at least one scrap type"),
       latitude: z.string().optional(),
       longitude: z.string().optional(),
+      aadharNumber: z.string().regex(/^\d{12}$/, "Please enter a valid 12-digit Aadhar number"),
+      panNumber: z.string().regex(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/, "Please enter a valid PAN number"),
+      aadharImage: z.instanceof(File).nullable(),
+      panImage: z.instanceof(File).nullable(),
+    }).refine(data => data.password === data.confirmPassword, {
+      message: "Passwords do not match",
+      path: ["confirmPassword"],
+    })
+    : z.object({
+      ...baseSchema,
+      role: z.literal('user'),
     }).refine(data => data.password === data.confirmPassword, {
       message: "Passwords do not match",
       path: ["confirmPassword"],
     });
-  }
-
-  return z.object(baseSchema).refine(data => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
 };
 
 const SignUpPage = () => {
@@ -84,9 +119,10 @@ const SignUpPage = () => {
   const initialRole = searchParams.get('type') === 'scrapper' ? 'scrapper' : 'user';
   const [role, setRole] = useState<'user' | 'scrapper'>(initialRole as 'user' | 'scrapper');
   const { signUp, loading } = useAuth();
+  const { supabase } = useSupabase();
   const schema = createSignUpSchema(role);
 
-  const form = useForm<ScrapperFormValues>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
       name: '',
@@ -96,12 +132,21 @@ const SignUpPage = () => {
       confirmPassword: '',
       city: '',
       address: '',
-      vehicleType: '',
-      workingHours: '',
-      serviceArea: '',
-      scrapTypes: [],
-      latitude: '',
-      longitude: '',
+      ...(role === 'scrapper' ? {
+        role: 'scrapper',
+        vehicleType: '',
+        workingHours: '',
+        serviceArea: '',
+        scrapTypes: [],
+        latitude: '',
+        longitude: '',
+        aadharNumber: '',
+        panNumber: '',
+        aadharImage: null,
+        panImage: null,
+      } : {
+        role: 'user'
+      })
     },
   });
 
@@ -114,19 +159,67 @@ const SignUpPage = () => {
     }
   }, [searchParams]);
 
-  const onSubmit = async (data: FormValues) => {
-    // Convert scrapTypes array to comma-separated string if present
-    let userData = { ...data };
-    if (role === 'scrapper' && 'scrapTypes' in userData) {
-      userData = { 
-        ...userData, 
-        scrapTypes: (userData as ScrapperFormValues).scrapTypes.join(',')
-      };
+  const uploadKYCImage = async (file: File, path: string) => {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
     }
-    
-    // Separate password and userData for security
-    const { password, ...userDataWithoutPassword } = userData;
-    await signUp(data.email, password, userDataWithoutPassword, role === 'scrapper');
+
+    const { data, error } = await supabase.storage
+      .from('kyc-docs')
+      .upload(path, file, {
+        cacheControl: '3600',
+        upsert: true,
+      });
+
+    if (error) throw error;
+    return data?.path;
+  };
+
+  const onSubmit = async (data: FormValues) => {
+    try {
+      let processedData = { ...data };
+
+      // Type guard to check if it's a scrapper
+      if (role === 'scrapper') {
+        const scrapperData = data as Extract<FormValues, { role: 'scrapper' }>;
+
+        // 1. Upload Aadhar image
+        let aadharPath = '';
+        if (scrapperData.aadharImage) {
+          aadharPath = `aadhar/${Date.now()}-${scrapperData.aadharImage.name}`;
+          await uploadKYCImage(scrapperData.aadharImage, aadharPath);
+        }
+
+        // 2. Upload PAN image
+        let panPath = '';
+        if (scrapperData.panImage) {
+          panPath = `pan/${Date.now()}-${scrapperData.panImage.name}`;
+          await uploadKYCImage(scrapperData.panImage, panPath);
+        }
+
+        // 3. Replace file objects with image URLs or paths
+        processedData = {
+          ...processedData,
+          scrapTypes: scrapperData.scrapTypes.join(','),
+          aadhar_image_url: aadharPath,
+          pan_image_url: panPath,
+        };
+      }
+
+      // Only exclude password and confirmPassword, keep the image paths
+      const { password, confirmPassword, ...userDataToSubmit } = processedData;
+
+      await signUp(
+        data.email,
+        password,
+        userDataToSubmit,
+        role === 'scrapper'
+      );
+      
+    } catch (error) {
+      console.error('Signup error:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to create account');
+    }
   };
 
   const pageTitle = role === 'user' ? 'Sign Up as User' : 'Sign Up as Scrapper';
@@ -135,7 +228,7 @@ const SignUpPage = () => {
     <div className="min-h-screen py-8 px-4 bg-gray-50 animate-fade-in">
       <div className="scrap-container max-w-[600px] mx-auto">
         <AuthHeader />
-        
+
         <div className="scrap-card bg-white p-6 rounded-lg shadow-lg border border-gray-200">
           <h1 className="scrap-heading text-center mb-6 text-2xl md:text-3xl">
             {pageTitle}
@@ -143,15 +236,15 @@ const SignUpPage = () => {
 
           {/* Role selection */}
           <div className="flex flex-col sm:flex-row gap-3 mb-6">
-            <Button 
-              type="button" 
+            <Button
+              type="button"
               onClick={() => setRole('user')}
               className={`flex-1 py-3 text-lg transition-transform hover:scale-105 ${role === 'user' ? 'bg-scrap-green hover:bg-scrap-green/90' : 'bg-gray-200 hover:bg-gray-300 text-gray-800'}`}
             >
               Sign Up as User
             </Button>
-            <Button 
-              type="button" 
+            <Button
+              type="button"
               onClick={() => setRole('scrapper')}
               className={`flex-1 py-3 text-lg transition-transform hover:scale-105 ${role === 'scrapper' ? 'bg-scrap-green hover:bg-scrap-green/90' : 'bg-gray-200 hover:bg-gray-300 text-gray-800'}`}
             >
@@ -223,8 +316,8 @@ const SignUpPage = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="scrap-label text-base">City</FormLabel>
-                    <Select 
-                      onValueChange={field.onChange} 
+                    <Select
+                      onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
                       <FormControl>
@@ -251,8 +344,8 @@ const SignUpPage = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="scrap-label text-base">Type of Vehicle</FormLabel>
-                        <Select 
-                          onValueChange={field.onChange} 
+                        <Select
+                          onValueChange={field.onChange}
                           defaultValue={field.value}
                         >
                           <FormControl>
@@ -306,8 +399,8 @@ const SignUpPage = () => {
                       <FormItem>
                         <FormLabel className="scrap-label text-base">Scrap Types You Collect</FormLabel>
                         <FormControl>
-                          <WasteTypeSelector 
-                            value={field.value} 
+                          <WasteTypeSelector
+                            value={field.value}
                             onChange={field.onChange}
                           />
                         </FormControl>
@@ -317,6 +410,71 @@ const SignUpPage = () => {
                   />
                 </>
               )}
+
+              {role === 'scrapper' && (
+                <>
+                  {/* KYC - Aadhar Number */}
+                  <FormField
+                    control={form.control}
+                    name="aadharNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="scrap-label text-base">Aadhar Number</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter Aadhar Number" className="scrap-input text-base py-2" {...field} />
+                        </FormControl>
+                        <FormMessage className="scrap-error text-base" />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* KYC - PAN Number */}
+                  <FormField
+                    control={form.control}
+                    name="panNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="scrap-label text-base">PAN Number</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter PAN Number" className="scrap-input text-base py-2" {...field} />
+                        </FormControl>
+                        <FormMessage className="scrap-error text-base" />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* KYC - Upload Aadhar Image */}
+                  <FormField
+                    control={form.control}
+                    name="aadharImage"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="scrap-label text-base">Upload Aadhar Card</FormLabel>
+                        <FormControl>
+                          <Input type="file" accept="image/*" className="scrap-input text-base py-2" onChange={(e) => field.onChange(e.target.files?.[0])} />
+                        </FormControl>
+                        <FormMessage className="scrap-error text-base" />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* KYC - Upload PAN Image */}
+                  <FormField
+                    control={form.control}
+                    name="panImage"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="scrap-label text-base">Upload PAN Card</FormLabel>
+                        <FormControl>
+                          <Input type="file" accept="image/*" className="scrap-input text-base py-2" onChange={(e) => field.onChange(e.target.files?.[0])} />
+                        </FormControl>
+                        <FormMessage className="scrap-error text-base" />
+                      </FormItem>
+                    )}
+                  />
+                </>
+              )}
+
 
               <FormField
                 control={form.control}
@@ -345,9 +503,9 @@ const SignUpPage = () => {
                   </FormItem>
                 )}
               />
-              
-              <Button 
-                type="submit" 
+
+              <Button
+                type="submit"
                 className="w-full scrap-btn-primary mt-6 text-lg py-3 transition-transform hover:scale-105"
                 disabled={loading}
               >
@@ -355,7 +513,7 @@ const SignUpPage = () => {
               </Button>
             </form>
           </Form>
-          
+
           <p className="mt-6 text-center text-gray-600 text-base">
             Already have an account?{' '}
             <Link to="/signin" className="text-scrap-blue hover:underline font-medium">

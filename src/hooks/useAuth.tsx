@@ -117,7 +117,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // Insert user data into the appropriate table
       if (isScrapperSignUp) {
-        // Insert scrapper data
+        let aadharUrl = null;
+        let panUrl = null;
+      
+        if (userData.aadharImage && userData.panImage) {
+          const userId = data.user.id;
+      
+          // Upload Aadhar
+          const { data: aadharUpload, error: aadharError } = await supabase.storage
+            .from('kyc-docs')
+            .upload(`aadhar/${userId}.jpg`, userData.aadharImage, {
+              cacheControl: '3600',
+              upsert: true,
+            });
+      
+          if (aadharError) throw aadharError;
+      
+          const { data: aadharPublic } = supabase
+            .storage
+            .from('kyc-docs')
+            .getPublicUrl(aadharUpload.path);
+          aadharUrl = aadharPublic.publicUrl;
+      
+          // Upload PAN
+          const { data: panUpload, error: panError } = await supabase.storage
+            .from('kyc-docs')
+            .upload(`pan/${userId}.jpg`, userData.panImage, {
+              cacheControl: '3600',
+              upsert: true,
+            });
+      
+          if (panError) throw panError;
+      
+          const { data: panPublic } = supabase
+            .storage
+            .from('kyc-docs')
+            .getPublicUrl(panUpload.path);
+          panUrl = panPublic.publicUrl;
+        }
+      
+        // Insert scrapper data WITHOUT latitude and longitude
         const { error: insertError } = await supabase
           .from('scrappers')
           .insert({
@@ -128,34 +167,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             city: userData.city,
             vehicle_type: userData.vehicleType,
             availability_hours: userData.workingHours,
-            latitude: userData.latitude ? parseFloat(userData.latitude) : null,
-            longitude: userData.longitude ? parseFloat(userData.longitude) : null,
             available: true,
-            rating: 0, // Default rating
+            rating: 0,
+            aadhar_url: aadharUrl,
+            pan_url: panUrl,
+            aadhar_number: userData.aadharNumber,
+            pan_number: userData.panNumber
           });
-
+      
         if (insertError) throw insertError;
+      
         setUserType('scrapper');
-        toast.success('Scrapper account created successfully');
+        toast.success('Scrapper account created with KYC!');
         navigate('/scrapper-dashboard');
-      } else {
-        // Insert user data
-        const { error: insertError } = await supabase
-          .from('users')
-          .insert({
-            id: data.user.id,
-            name: userData.name,
-            email: userData.email,
-            phone: userData.phone,
-            address: userData.address,
-            city: userData.city,
-          });
-
-        if (insertError) throw insertError;
-        setUserType('user');
-        toast.success('User account created successfully');
-        navigate('/user-dashboard');
       }
+      
     } catch (error: any) {
       console.error('Error signing up:', error);
       toast.error(error.message || 'Error signing up');

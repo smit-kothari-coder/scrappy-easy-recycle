@@ -24,14 +24,16 @@ const ScrapperProfilePage = () => {
             : profileData.scrap_types.split(',')
           : [];
 
-        setInitialData({
-          name: profileData.name,
-          email: profileData.email,
-          phone: profileData.phone || '',
-          vehicleType: profileData.vehicle_type || '',
-          hours: profileData.availability_hours || '',
-          scrapTypes: scrapTypes,
-        });
+          setInitialData({
+            id: profileData.id, // ✅ Add this line
+            name: profileData.name,
+            email: profileData.email,
+            phone: profileData.phone || '',
+            vehicleType: profileData.vehicle_type || '',
+            hours: profileData.availability_hours || '',
+            scrapTypes: scrapTypes,
+          });
+          
       } catch (error) {
         console.error("Error fetching profile:", error);
         toast.error("Could not load profile data. Please try again.");
@@ -48,25 +50,35 @@ const ScrapperProfilePage = () => {
       toast.error("You must be logged in to update your profile");
       return;
     }
-
+  
     const { password, scrapTypes, vehicleType, hours, ...profileData } = data;
-    
+  
     try {
-      await updateScrapper(initialData.id, {
+      const result = await updateScrapper(initialData.id, {
         ...profileData,
         vehicle_type: vehicleType,
         availability_hours: hours,
         scrap_types: scrapTypes,
       });
-      // Handle password update if provided
-      if (password?.trim()) {
-        // Update password logic would go here if needed
+
+      if (result.error) {
+        console.error("Supabase update error:", result.error.message);
+        toast.error("Failed to update profile. Please try again.");
+        return;
       }
+  
+      // If password is entered, handle it separately here
+      if (password?.trim()) {
+        // password update logic here, if any
+      }
+  
+      toast.success("Profile updated successfully!");
     } catch (error) {
-      console.error("Error updating profile:", error);
-      throw error;
+      console.error("Unexpected error:", error);
+      toast.error("Something went wrong. Please try again.");
     }
   };
+  
 
   if (isLoading) {
     return (
