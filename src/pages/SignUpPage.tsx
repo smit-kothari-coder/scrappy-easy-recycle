@@ -117,14 +117,10 @@ const SignUpPage = () => {
   const onSubmit = async (data: FormValues) => {
     // Convert scrapTypes array to comma-separated string if present
     let userData = { ...data };
-    
-    // Ensure scrapTypes is always an array before converting to string
     if (role === 'scrapper' && 'scrapTypes' in userData) {
-      const scrapTypesArray = (userData as ScrapperFormValues).scrapTypes;
       userData = { 
         ...userData, 
-        // Ensure we're passing an array of strings, not a single string
-        scrapTypes: Array.isArray(scrapTypesArray) ? scrapTypesArray.join(',') : [scrapTypesArray].join(',')
+        scrapTypes: (userData as ScrapperFormValues).scrapTypes.join(',')
       };
     }
     
