@@ -1,7 +1,7 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { User, Recycle, Calendar, Check, Award, Star, StarOff, StarHalf, Info } from "lucide-react";
+import { User, Recycle, Calendar, Check, Award, Star, StarOff, Info, LogIn } from "lucide-react";
 
 const reviews = [
   {
@@ -61,6 +61,11 @@ const LandingPage = () => {
             <Link to="/signup?type=scrapper" className="w-full sm:w-auto">
               <Button className="scrap-btn-secondary w-full flex items-center justify-center gap-2 text-lg py-5 px-8 shadow-md">
                 <Recycle size={22} /> Sign Up as Scrapper
+              </Button>
+            </Link>
+            <Link to="/signin" className="w-full sm:w-auto">
+              <Button variant="outline" size="default" className="w-full flex items-center justify-center gap-2 text-lg py-5 px-8 shadow-md border-white text-white hover:bg-white hover:text-scrap-blue transition-colors">
+                <LogIn size={22} /> Sign In
               </Button>
             </Link>
           </div>
@@ -165,3 +170,4 @@ const LandingPage = () => {
 };
 
 export default LandingPage;
+
