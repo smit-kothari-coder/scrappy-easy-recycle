@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { User, Recycle, Calendar, Check, Award, Star, StarOff, StarHalf, Info } from "lucide-react";
+import { User, Recycle, Calendar, Check, Award, Star, StarOff, Info , Battery, ArrowLeft, LogIn } from "lucide-react";
+import { Box, Cpu, BookOpen } from "lucide-react";
+
 
 const reviews = [
   {
