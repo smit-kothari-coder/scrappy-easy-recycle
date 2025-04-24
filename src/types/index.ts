@@ -1,3 +1,4 @@
+
 export type Profile = {
   id: string;
   user_id: string;
@@ -33,12 +34,12 @@ export type RedeemedReward = {
 };
 
 export type Scrapper = {
+  [x: string]: any;
   id: string;
   name: string;
   email: string;
   phone: string;
   city: string;
-  address?: string;
   vehicle_type: string | null;
   availability_hours: string | null;
   latitude: number | null;

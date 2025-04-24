@@ -1,73 +1,90 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useBusinessLocationScraper } from '@/hooks/useBusinessLocationScraper';
-import { type Location } from '@/types/location';
-import { supabase } from '@/lib/supabase';
+import { MapContainer, TileLayer, Marker, Popup, MapContainerProps } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+// Fix for default marker icon
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+});
+
+// Define props with proper types
+interface ExtendedMapContainerProps extends MapContainerProps {
+  center: L.LatLngExpression;
+  zoom: number;
+  style?: React.CSSProperties;
+  className?: string;
+}
 
 const BusinessLocationScraper: React.FC = () => {
   const [url, setUrl] = useState('');
-  const { scrapeBusinessLocation, locations, isLoading, error } = useBusinessLocationScraper();
+  const { scrapeBusinessLocation, locations, isLoading } = useBusinessLocationScraper();
+  const [mapKey, setMapKey] = useState(0);
 
   const handleScrape = () => {
-    if (!url) {
-      return;
-    }
     scrapeBusinessLocation(url);
   };
 
+  const defaultPosition: [number, number] = [51.505, -0.09]; // London as default
+  const mapCenter = locations.length > 0
+    ? [locations[locations.length - 1].latitude, locations[locations.length - 1].longitude] as [number, number]
+    : defaultPosition;
+    
+  useEffect(() => {
+    if (locations.length > 0) {
+      setMapKey(prev => prev + 1);
+    }
+  }, [locations]);
+
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row gap-3">
+      <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
         <Input 
           value={url} 
           onChange={(e) => setUrl(e.target.value)}
           placeholder="Enter website URL to scrape" 
-          className="flex-1"
-          disabled={isLoading}
+          className="text-base"
         />
-        <Button 
-          onClick={handleScrape} 
-          disabled={isLoading || !url}
-          className="bg-blue-600 hover:bg-blue-700 text-white"
-        >
+        <Button onClick={handleScrape} disabled={isLoading} className="text-base py-2 px-4">
           {isLoading ? 'Scraping...' : 'Scrape'}
         </Button>
       </div>
 
-      {error && (
-        <div className="text-red-500 text-center py-4">
-          {error}
-        </div>
-      )}
-
-      {locations.length > 0 && (
-        <div className="space-y-4">
-          <div className="text-center text-sm text-gray-500">
-            Found {locations.length} locations
-          </div>
-          
-          <div className="grid gap-4">
-            {locations.map((location) => (
-              <div
-                key={location.id}
-                className="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow border border-gray-100"
-              >
-                <div className="space-y-2">
-                  <h3 className="font-semibold text-lg">{location.name}</h3>
-                  {location.summary && (
-                    <p className="text-sm text-gray-600">{location.summary}</p>
-                  )}
-                  <p className="text-sm text-gray-500">{location.address}</p>
-                  <div className="text-xs text-gray-400">
-                    Coordinates: {location.latitude}, {location.longitude}
-                  </div>
+      <div key={mapKey} className="w-full h-[400px]">
+        <MapContainer 
+          center={mapCenter}
+          zoom={locations.length ? 13 : 2} 
+          style={{ height: '400px', width: '100%' }}
+          className="w-full h-full rounded-lg"
+          {...{} as ExtendedMapContainerProps}
+        >
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            {...{attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'} as any}
+          />
+          {locations.map((location) => (
+            <Marker 
+              key={location.id}
+              position={[location.latitude, location.longitude]}
+            >
+              <Popup>
+                <div>
+                  <strong>{location.name}</strong>
+                  <p>{location.summary || ''}</p>
+                  <small>{location.address}</small>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+              </Popup>
+            </Marker>
+          ))}
+        </MapContainer>
+      </div>
     </div>
   );
 };

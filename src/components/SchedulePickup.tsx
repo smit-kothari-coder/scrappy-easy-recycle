@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -35,28 +36,6 @@ const timeSlots = [
   "Evening (4PM - 7PM)",
 ];
 
-const getAvailableTimeSlots = (selectedDate: Date | undefined) => {
-  if (!selectedDate) return timeSlots;
-
-  const today = new Date();
-  const isToday = selectedDate.getDate() === today.getDate() &&
-                  selectedDate.getMonth() === today.getMonth() &&
-                  selectedDate.getFullYear() === today.getFullYear();
-
-  if (!isToday) return timeSlots;
-
-  const currentHour = today.getHours();
-  
-  return timeSlots.filter(slot => {
-    const slotHour = parseInt(slot.match(/\d+/)?.[0] || "0");
-    const isPM = slot.includes("PM");
-    const hour24 = isPM && slotHour !== 12 ? slotHour + 12 : slotHour;
-
-    // Allow booking if current time is at least 2 hours before the slot
-    return currentHour + 2 < hour24;
-  });
-};
-
 const SchedulePickup = () => {
   const { user } = useAuth();
   const { createPickupRequest } = useSupabase();
@@ -81,9 +60,7 @@ const SchedulePickup = () => {
     
     setIsSubmitting(true);
     try {
-      console.log('Submitting form data:', data);
-      
-      const result = await createPickupRequest({
+      await createPickupRequest({
         user_id: user.id,
         weight: data.weight,
         address: data.address,
@@ -92,12 +69,11 @@ const SchedulePickup = () => {
         type: data.type,
       });
       
-      console.log('Pickup request created:', result);
       toast.success("Pickup scheduled successfully!");
       form.reset();
     } catch (error) {
       console.error("Error scheduling pickup:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to schedule pickup. Please try again.");
+      toast.error("Failed to schedule pickup. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -182,33 +158,8 @@ const SchedulePickup = () => {
                       mode="single"
                       selected={field.value}
                       onSelect={field.onChange}
-                      disabled={(date) => {
-                        // Get current date with time set to midnight
-                        const today = new Date();
-                        today.setHours(0, 0, 0, 0);
-
-                        // Get the selected date with time set to midnight
-                        const selectedDate = new Date(date);
-                        selectedDate.setHours(0, 0, 0, 0);
-
-                        // Get current time
-                        const currentHour = new Date().getHours();
-
-                        // If it's the current date, check if it's too late for today's slots
-                        if (selectedDate.getTime() === today.getTime()) {
-                          // If it's after 4 PM (16:00), disable today
-                          return currentHour >= 16;
-                        }
-
-                        // Disable past dates and dates more than 30 days in the future
-                        const thirtyDaysFromNow = new Date();
-                        thirtyDaysFromNow.setDate(today.getDate() + 30);
-                        
-                        return date < today || date > thirtyDaysFromNow;
-                      }}
+                      disabled={(date) => date < new Date()}
                       initialFocus
-                      fromDate={new Date()} // Set minimum date to today
-                      toDate={new Date(new Date().setDate(new Date().getDate() + 30))} // Set maximum date to 30 days from now
                     />
                   </PopoverContent>
                 </Popover>
@@ -223,18 +174,14 @@ const SchedulePickup = () => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="font-medium">Preferred Time</FormLabel>
-                <Select 
-                  onValueChange={field.onChange} 
-                  defaultValue={field.value}
-                  disabled={!form.watch('date')} // Disable if no date is selected
-                >
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger className="bg-gray-50 border-gray-200">
                       <SelectValue placeholder="Select time slot" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {getAvailableTimeSlots(form.watch('date')).map((slot) => (
+                    {timeSlots.map((slot) => (
                       <SelectItem key={slot} value={slot}>
                         {slot}
                       </SelectItem>
@@ -242,11 +189,6 @@ const SchedulePickup = () => {
                   </SelectContent>
                 </Select>
                 <FormMessage />
-                {!form.watch('date') && (
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Please select a date first
-                  </p>
-                )}
               </FormItem>
             )}
           />

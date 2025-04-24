@@ -2,8 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
-
 @layer base {
   :root {
     /* Custom ScrapEasy base styling */
@@ -144,4 +142,3 @@
     @apply text-scrap-green text-sm mt-1;
   }
 }
-

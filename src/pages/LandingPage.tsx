@@ -1,28 +1,41 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { User, Recycle, Calendar, Check, Award, Star, StarOff, Info , Battery, ArrowLeft, LogIn } from "lucide-react";
-import { Box, Cpu, BookOpen } from "lucide-react";
-
+import {
+  User,
+  Recycle,
+  Calendar,
+  Check,
+  Award,
+  Star,
+  StarOff,
+  Info,
+  Battery,
+  Box,
+  Cpu,
+  BookOpen,
+} from "lucide-react";
+import { useState } from "react";
+import { SolutionFormModal } from "@/components/SolutionFormModal";
 
 const reviews = [
   {
     name: "Meera R.",
     rating: 5,
     text: "Super convenient to schedule waste pickups. The UI is clean and smooth!",
-    avatar: "https://randomuser.me/api/portraits/women/65.jpg"
+    avatar: "https://randomuser.me/api/portraits/women/65.jpg",
   },
   {
     name: "Karan S.",
     rating: 4,
     text: "Fast pickups and friendly staff. Highly recommended for busy folks.",
-    avatar: "https://randomuser.me/api/portraits/men/74.jpg"
+    avatar: "https://randomuser.me/api/portraits/men/74.jpg",
   },
   {
     name: "Pooja M.",
     rating: 5,
     text: "Love the rewards system! It's fun earning points for recycling.",
-    avatar: "https://randomuser.me/api/portraits/women/85.jpg"
-  }
+    avatar: "https://randomuser.me/api/portraits/women/85.jpg",
+  },
 ];
 
 const getStars = (rating: number) => {
@@ -38,9 +51,22 @@ const getStars = (rating: number) => {
 };
 
 const LandingPage = () => {
+  const [selectedSolution, setSelectedSolution] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleSolutionClick = (solution: string) => {
+    setSelectedSolution(solution);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedSolution(null);
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#F1F0FB] to-white">
-      {/* Hero section */}
+      {/* Hero Section */}
       <section className="relative flex flex-col items-center justify-center px-4 py-16 bg-gradient-to-br from-scrap-green/80 to-scrap-blue/70 min-h-[380px] rounded-b-3xl shadow-lg">
         <div className="absolute inset-0 bg-black/30 rounded-b-3xl" />
         <div className="relative z-10 flex flex-col items-center max-w-xl w-full scrap-container">
@@ -59,7 +85,6 @@ const LandingPage = () => {
                 <User size={22} /> Sign In
               </Button>
             </Link>
-
             <Link to="/signup" className="w-full sm:w-auto">
               <Button className="scrap-btn-primary w-full flex items-center justify-center gap-2 text-lg py-5 px-8 shadow-md">
                 <User size={22} /> Sign Up as User
@@ -70,17 +95,11 @@ const LandingPage = () => {
                 <Recycle size={22} /> Sign Up as Scrapper
               </Button>
             </Link>
-            <Link to="/signin" className="w-full sm:w-auto">
-              <Button variant="outline" size="default" className="w-full flex items-center justify-center gap-2 text-lg py-5 px-8 shadow-md border-white text-white hover:bg-white hover:text-scrap-blue transition-colors">
-                <LogIn size={22} /> Sign In
-              </Button>
-            </Link>
           </div>
-
         </div>
       </section>
 
-      {/* Scrap Categories Section */}
+      {/* Scrap Categories */}
       <section className="py-12 bg-white text-center">
         <h2 className="text-3xl font-bold text-gray-800 mb-6">What We Collect</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 max-w-5xl mx-auto px-4">
@@ -91,10 +110,7 @@ const LandingPage = () => {
             { icon: <Cpu />, label: "Metal" },
             { icon: <BookOpen />, label: "Paper" },
           ].map(({ icon, label }, i) => (
-            <div
-              key={i}
-              className="p-4 bg-[#f9f9f9] rounded-xl shadow text-center flex flex-col items-center justify-center"
-            >
+            <div key={i} className="p-4 bg-[#f9f9f9] rounded-xl shadow text-center flex flex-col items-center justify-center">
               <div className="text-scrap-green mb-2 text-3xl">{icon}</div>
               <p className="font-semibold text-sm">{label}</p>
             </div>
@@ -102,37 +118,65 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* How It Works - Stepwise Section */}
+      {/* Solutions by Industry */}
+      <section className="py-12 bg-green-50 w-full">
+        <div className="max-w-6xl mx-auto px-4 text-center">
+          <p className="text-green-700 font-medium mb-2 italic">Industries We Serve</p>
+          <h2 className="text-4xl font-extrabold mb-8 text-gray-800">Solutions by Industry</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div onClick={() => handleSolutionClick("Residential Apartments")} className="cursor-pointer bg-white shadow rounded-lg overflow-hidden hover:shadow-lg transition">
+              <img src="/images/residential.jpg" alt="Residential Apartments" className="w-full h-48 object-cover" />
+              <div className="p-4">
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">Residential Apartments</h3>
+                <p className="text-gray-600 text-sm">Arrange Recyclable waste collection Drives after every 3 months</p>
+              </div>
+            </div>
+
+            <div onClick={() => handleSolutionClick("IT Companies/Bank Offices")} className="cursor-pointer bg-white shadow rounded-lg overflow-hidden hover:shadow-lg transition">
+              <img src="/images/it-companies.jpg" alt="IT Companies/Bank Offices" className="w-full h-48 object-cover" />
+              <div className="p-4">
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">IT Companies/Bank Offices</h3>
+                <p className="text-gray-600 text-sm">Old Monitors, CPUs, Printers, Telephone, Servers, UPS and more</p>
+              </div>
+            </div>
+
+            <div onClick={() => handleSolutionClick("Schools & Colleges")} className="cursor-pointer bg-gray-100 rounded-xl overflow-hidden shadow-md hover:shadow-lg transition">
+              <img src="/images/institue.jpg" alt="Educational Scrap Collection" className="w-full h-48 object-cover" />
+              <div className="p-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">Schools & Colleges</h3>
+                <p className="text-gray-600 text-sm">Organize student-led scrap collection drives and campus audits.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Solution Modal */}
+      <SolutionFormModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        category={selectedSolution}
+      />
+
+      {/* How It Works */}
       <section className="w-full py-12 px-3 sm:px-0 flex flex-col items-center">
         <h2 className="scrap-heading mb-8 text-[#1A1F2C] flex items-center gap-2">
           <Info size={26} className="text-scrap-blue" /> How It Works
         </h2>
         <div className="max-w-4xl w-full flex flex-col md:flex-row items-stretch justify-center gap-6">
-          <div className="flex-1 bg-white rounded-2xl shadow-md p-6 flex flex-col items-center min-w-[200px] animate-fade-in">
-            <User size={36} className="mb-3 text-scrap-blue" />
-            <span className="text-lg font-semibold mb-1">Sign Up / Log In</span>
-            <p className="text-gray-600 text-center text-sm">Register as a user or scrapper.</p>
-          </div>
-          <div className="flex-1 bg-white rounded-2xl shadow-md p-6 flex flex-col items-center min-w-[200px] animate-fade-in">
-            <Recycle size={36} className="mb-3 text-[#28a745]" />
-            <span className="text-lg font-semibold mb-1">Choose Scrap Type</span>
-            <p className="text-gray-600 text-center text-sm">Select waste materials you want to recycle.</p>
-          </div>
-          <div className="flex-1 bg-white rounded-2xl shadow-md p-6 flex flex-col items-center min-w-[200px] animate-fade-in">
-            <Calendar size={36} className="mb-3 text-scrap-blue" />
-            <span className="text-lg font-semibold mb-1">Schedule a Pickup</span>
-            <p className="text-gray-600 text-center text-sm">Pick your preferred date &amp; time.</p>
-          </div>
-          <div className="flex-1 bg-white rounded-2xl shadow-md p-6 flex flex-col items-center min-w-[200px] animate-fade-in">
-            <Check size={36} className="mb-3 text-scrap-green" />
-            <span className="text-lg font-semibold mb-1">Track &amp; Confirm</span>
-            <p className="text-gray-600 text-center text-sm">Get updates and confirm successful pickups.</p>
-          </div>
-          <div className="flex-1 bg-white rounded-2xl shadow-md p-6 flex flex-col items-center min-w-[200px] animate-fade-in">
-            <Award size={36} className="mb-3 text-yellow-500" />
-            <span className="text-lg font-semibold mb-1">Get Rewarded</span>
-            <p className="text-gray-600 text-center text-sm">Earn points or cashback for recycling.</p>
-          </div>
+          {[
+            { icon: <User size={36} className="mb-3 text-scrap-blue" />, title: "Sign Up / Log In", desc: "Register as a user or scrapper." },
+            { icon: <Recycle size={36} className="mb-3 text-[#28a745]" />, title: "Choose Scrap Type", desc: "Select waste materials you want to recycle." },
+            { icon: <Calendar size={36} className="mb-3 text-scrap-blue" />, title: "Schedule a Pickup", desc: "Pick your preferred date & time." },
+            { icon: <Check size={36} className="mb-3 text-scrap-green" />, title: "Track & Confirm", desc: "Get updates and confirm successful pickups." },
+            { icon: <Award size={36} className="mb-3 text-yellow-500" />, title: "Get Rewarded", desc: "Earn points or cashback for recycling." },
+          ].map((step, i) => (
+            <div key={i} className="flex-1 bg-white rounded-2xl shadow-md p-6 flex flex-col items-center min-w-[200px] animate-fade-in">
+              {step.icon}
+              <span className="text-lg font-semibold mb-1">{step.title}</span>
+              <p className="text-gray-600 text-center text-sm">{step.desc}</p>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -171,31 +215,25 @@ const LandingPage = () => {
               <img
                 src={r.avatar}
                 alt={r.name}
-                className="h-16 w-16 rounded-full mb-4 border-2 border-green-500 shadow"
+                className="h-14 w-14 rounded-full mb-4 border-2 border-scrap-green shadow"
+                loading="lazy"
               />
-              <div className="mb-3 flex">
-                {[...Array(5)].map((_, i) => (
-                  <Star 
-                    key={i} 
-                    className={`w-5 h-5 ${i < r.rating ? 'text-yellow-400' : 'text-gray-200'}`}
-                  />
-                ))}
-              </div>
-              <p className="text-gray-700 italic text-center mb-3">"{r.text}"</p>
-              <span className="text-blue-600 font-medium">{r.name}</span>
+              <div className="mb-2">{getStars(r.rating)}</div>
+              <p className="text-gray-700 italic text-center text-sm mb-2">&quot;{r.text}&quot;</p>
+              <span className="text-[.99rem] font-semibold text-scrap-blue mt-2">{r.name}</span>
             </div>
           ))}
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-100 py-8 mt-auto">
+      <footer className="bg-gray-100 py-6 mt-auto">
         <div className="scrap-container text-center max-w-[600px] mx-auto">
-          <p className="text-gray-600 text-base mb-3">© 2025 ScrapEasy. All rights reserved.</p>
-          <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-6 items-center">
-            <Link to="/faq" className="text-blue-600 hover:underline">FAQ</Link>
-            <span className="text-gray-500 hidden sm:inline">|</span>
-            <span className="text-blue-600">📧 smit.kothari@aissmsioit.org</span>
+          <p className="text-gray-600 text-base">© 2025 ScrapEasy. All rights reserved.</p>
+          <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-6 mt-2 text-base">
+            <Link to="/faq" className="text-scrap-blue hover:underline">FAQ</Link>
+            <span className="text-gray-500">|</span>
+            <span className="text-scrap-blue">📧 smit.kothari@aissmsioit.org</span>
           </div>
         </div>
       </footer>
@@ -204,4 +242,3 @@ const LandingPage = () => {
 };
 
 export default LandingPage;
-
