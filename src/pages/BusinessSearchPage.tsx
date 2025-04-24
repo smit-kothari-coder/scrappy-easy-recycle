@@ -1,9 +1,8 @@
-
 import React from 'react';
-import BusinessLocationSearch from '@/components/BusinessLocationSearch';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
+import BusinessLocationScraper from '@/components/BusinessLocationScraper';
 
 const BusinessSearchPage: React.FC = () => {
   return (
@@ -20,7 +19,10 @@ const BusinessSearchPage: React.FC = () => {
         
         <div className="bg-white p-6 rounded-lg shadow-sm">
           <h1 className="text-2xl font-bold mb-6">Business Location Finder</h1>
-          <BusinessLocationSearch />
+          <p className="text-gray-600 mb-4">
+            Enter a website URL to find business locations. The scraper will extract address and location information.
+          </p>
+          <BusinessLocationScraper />
         </div>
       </div>
     </div>

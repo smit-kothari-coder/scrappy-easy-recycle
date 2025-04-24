@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
+import { ArrowLeft } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -17,7 +18,8 @@ import { useSupabase } from '@/hooks/useSupabase';
 
 const indianCities = [
   "Delhi", "Mumbai", "Kolkata", "Chennai", "Bangalore",
-  "Hyderabad", "Ahmedabad", "Pune", "Jaipur", "Lucknow"
+  "Hyderabad", "Ahmedabad", "Pune", "Jaipur", "Lucknow",
+  "custom"
 ];
 
 const vehicleTypes = [
@@ -39,7 +41,6 @@ type BaseFormValues = {
 type ScrapperFormValues = BaseFormValues & {
   vehicleType: string;
   workingHours: string;
-  serviceArea: string;
   scrapTypes: string[];
   latitude: string;
   longitude: string;
@@ -65,7 +66,6 @@ type FormValues = {
       role: 'scrapper';
       vehicleType: string;
       workingHours: string;
-      serviceArea: string;
       scrapTypes: string[];
       latitude?: string;
       longitude?: string;
@@ -93,7 +93,6 @@ const createSignUpSchema = (role: 'user' | 'scrapper') => {
       role: z.literal('scrapper'),
       vehicleType: z.string().min(1, "Please select a vehicle type"),
       workingHours: z.string().min(1, "Please specify your working hours"),
-      serviceArea: z.string().min(1, "Please specify your service area"),
       scrapTypes: z.array(z.string()).min(1, "Please select at least one scrap type"),
       latitude: z.string().optional(),
       longitude: z.string().optional(),
@@ -121,6 +120,9 @@ const SignUpPage = () => {
   const { signUp, loading } = useAuth();
   const { supabase } = useSupabase();
   const schema = createSignUpSchema(role);
+  const navigate = useNavigate();
+
+  const [showCustomCity, setShowCustomCity] = useState(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -135,8 +137,8 @@ const SignUpPage = () => {
       ...(role === 'scrapper' ? {
         role: 'scrapper',
         vehicleType: '',
+        vehicleNumber: '',
         workingHours: '',
-        serviceArea: '',
         scrapTypes: [],
         latitude: '',
         longitude: '',
@@ -229,6 +231,16 @@ const SignUpPage = () => {
       <div className="scrap-container max-w-[600px] mx-auto">
         <AuthHeader />
 
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={() => navigate(-1)}
+          className="mb-4 flex items-center gap-2 text-gray-600 hover:text-gray-800"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back
+        </Button>
+
         <div className="scrap-card bg-white p-6 rounded-lg shadow-lg border border-gray-200">
           <h1 className="scrap-heading text-center mb-6 text-2xl md:text-3xl">
             {pageTitle}
@@ -315,19 +327,29 @@ const SignUpPage = () => {
                 name="city"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="scrap-label text-base">City</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
+                    <FormLabel className="scrap-label text-base">City / Service Area</FormLabel>
+                    <Select 
+                      onValueChange={(value) => {
+                        if (value === 'custom') {
+                          setShowCustomCity(true);
+                          field.onChange('');
+                        } else {
+                          setShowCustomCity(false);
+                          field.onChange(value);
+                        }
+                      }}
                       defaultValue={field.value}
                     >
                       <FormControl>
                         <SelectTrigger className="scrap-input text-base py-2">
-                          <SelectValue placeholder="Select your city" />
+                          <SelectValue placeholder="Select your city / service area" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         {indianCities.map((city) => (
-                          <SelectItem key={city} value={city}>{city}</SelectItem>
+                          <SelectItem key={city} value={city}>
+                            {city === 'custom' ? 'Other (Custom)' : city}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -335,6 +357,27 @@ const SignUpPage = () => {
                   </FormItem>
                 )}
               />
+
+              {/* Custom City Input - Only shows when custom is selected */}
+              {showCustomCity && (
+                <FormField
+                  control={form.control}
+                  name="city"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="scrap-label text-base">Enter Custom City / Service Area</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Enter your city / service area" 
+                          className="scrap-input text-base py-2"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage className="scrap-error text-base" />
+                    </FormItem>
+                  )}
+                />
+              )}
 
               {role === 'scrapper' && (
                 <>
@@ -366,12 +409,19 @@ const SignUpPage = () => {
 
                   <FormField
                     control={form.control}
-                    name="workingHours"
+                    name="vehicleNumber"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="scrap-label text-base">Working Hours</FormLabel>
+                        <FormLabel className="scrap-label text-base">Vehicle Registration Number</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g., 9 AM - 6 PM" className="scrap-input text-base py-2" {...field} />
+                          <Input 
+                            placeholder="Enter vehicle number (e.g., GJ01AB1234)" 
+                            className="scrap-input text-base py-2"
+                            {...field}
+                            onChange={(e) => {
+                              field.onChange(e.target.value.toUpperCase());
+                            }}
+                          />
                         </FormControl>
                         <FormMessage className="scrap-error text-base" />
                       </FormItem>
@@ -380,13 +430,30 @@ const SignUpPage = () => {
 
                   <FormField
                     control={form.control}
-                    name="serviceArea"
+                    name="workingHours"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="scrap-label text-base">Service Area</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g., North Mumbai" className="scrap-input text-base py-2" {...field} />
-                        </FormControl>
+                        <FormLabel className="scrap-label text-base">Working Hours</FormLabel>
+                        <Select 
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="scrap-input text-base py-2">
+                              <SelectValue placeholder="Select your working hours" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="6AM-2PM">6:00 AM - 2:00 PM</SelectItem>
+                            <SelectItem value="8AM-4PM">8:00 AM - 4:00 PM</SelectItem>
+                            <SelectItem value="9AM-5PM">9:00 AM - 5:00 PM</SelectItem>
+                            <SelectItem value="10AM-6PM">10:00 AM - 6:00 PM</SelectItem>
+                            <SelectItem value="11AM-7PM">11:00 AM - 7:00 PM</SelectItem>
+                            <SelectItem value="12PM-8PM">12:00 PM - 8:00 PM</SelectItem>
+                            <SelectItem value="2PM-10PM">2:00 PM - 10:00 PM</SelectItem>
+                            <SelectItem value="24/7">24/7 Available</SelectItem>
+                          </SelectContent>
+                        </Select>
                         <FormMessage className="scrap-error text-base" />
                       </FormItem>
                     )}

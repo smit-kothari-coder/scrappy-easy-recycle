@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { User, Recycle, Calendar, Check, Award, Star, StarOff, StarHalf, Info , Battery} from "lucide-react";
+import { User, Recycle, Calendar, Check, Award, Star, StarOff, StarHalf, Info , Battery, ArrowLeft } from "lucide-react";
 import { Box, Cpu, BookOpen } from "lucide-react";
 
 const reviews = [
@@ -165,27 +165,31 @@ const LandingPage = () => {
               <img
                 src={r.avatar}
                 alt={r.name}
-                className="h-14 w-14 rounded-full mb-4 border-2 border-scrap-green shadow"
-                loading="lazy"
+                className="h-16 w-16 rounded-full mb-4 border-2 border-green-500 shadow"
               />
-              <div className="mb-2">{getStars(r.rating)}</div>
-              <p className="text-gray-700 italic text-center text-sm mb-2">&quot;{r.text}&quot;</p>
-              <span className="text-[.99rem] font-semibold text-scrap-blue mt-2">{r.name}</span>
+              <div className="mb-3 flex">
+                {[...Array(5)].map((_, i) => (
+                  <Star 
+                    key={i} 
+                    className={`w-5 h-5 ${i < r.rating ? 'text-yellow-400' : 'text-gray-200'}`}
+                  />
+                ))}
+              </div>
+              <p className="text-gray-700 italic text-center mb-3">"{r.text}"</p>
+              <span className="text-blue-600 font-medium">{r.name}</span>
             </div>
           ))}
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-100 py-6 mt-auto">
+      <footer className="bg-gray-100 py-8 mt-auto">
         <div className="scrap-container text-center max-w-[600px] mx-auto">
-          <p className="text-gray-600 text-base">© 2025 ScrapEasy. All rights reserved.</p>
-          <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-6 mt-2 text-base">
-            <Link to="/faq" className="text-scrap-blue hover:underline">FAQ</Link>
-            <span className="text-gray-500">|</span>
-            <span className="text-scrap-blue">📧 smit.kothari@aissmsioit.org</span>
-            <span className="text-gray-500">|</span>
-            <Link to="/business-search" className="text-scrap-blue hover:underline">Business Finder</Link>
+          <p className="text-gray-600 text-base mb-3">© 2025 ScrapEasy. All rights reserved.</p>
+          <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-6 items-center">
+            <Link to="/faq" className="text-blue-600 hover:underline">FAQ</Link>
+            <span className="text-gray-500 hidden sm:inline">|</span>
+            <span className="text-blue-600">📧 smit.kothari@aissmsioit.org</span>
           </div>
         </div>
       </footer>

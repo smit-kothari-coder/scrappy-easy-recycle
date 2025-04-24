@@ -1,50 +1,57 @@
-
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { BusinessLocation } from '@/types';
+import { type Location } from '@/types/location';
+import { supabase } from '@/lib/supabase';
 
 export const useBusinessLocationScraper = () => {
+  const [locations, setLocations] = useState<Location[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [locations, setLocations] = useState<BusinessLocation[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   const scrapeBusinessLocation = async (url: string) => {
     setIsLoading(true);
+    setError(null);
+    
     try {
-      const { data: scrapedData, error } = await supabase.functions.invoke('scrape-business-locations', {
-        body: JSON.stringify({ url })
-      });
+      const { data: { locations: scrapedLocations }, error: scrapeError } = await supabase
+        .functions.invoke('scrape-business-locations', {
+          body: { url }
+        });
 
-      if (error) throw error;
+      if (scrapeError) throw scrapeError;
 
-      // Make sure the data has the correct format
-      const formattedData = {
-        name: scrapedData.name,
-        address: scrapedData.address,
-        summary: scrapedData.summary || null,
-        latitude: scrapedData.latitude,
-        longitude: scrapedData.longitude
-      };
+      if (!scrapedLocations || !Array.isArray(scrapedLocations) || scrapedLocations.length === 0) {
+        toast.info('No locations found on this website');
+        setLocations([]);
+        return;
+      }
 
-      const { data: newLocation, error: insertError } = await supabase
-        .from('business_locations')
-        .insert(formattedData)
-        .select()
-        .single();
+      const formattedLocations: Location[] = scrapedLocations.map((loc: any) => ({
+        id: loc.id || crypto.randomUUID(),
+        name: loc.name,
+        address: loc.address,
+        latitude: loc.latitude,
+        longitude: loc.longitude,
+        summary: loc.summary || undefined
+      }));
 
-      if (insertError) throw insertError;
+      setLocations(formattedLocations);
+      toast.success(`Found ${formattedLocations.length} locations`);
 
-      setLocations(prev => [...prev, newLocation as BusinessLocation]);
-      toast.success('Business location scraped successfully!');
-    } catch (error) {
-      console.error('Scraping error:', error);
-      toast.error(error instanceof Error ? error.message : 'An unknown error occurred');
+    } catch (err) {
+      console.error('Error scraping locations:', err);
+      setError(err instanceof Error ? err.message : 'Failed to scrape locations');
+      toast.error('Failed to scrape locations. Please try again.');
+      setLocations([]);
     } finally {
       setIsLoading(false);
     }
-
-    return locations;
   };
 
-  return { scrapeBusinessLocation, locations, isLoading };
+  return {
+    scrapeBusinessLocation,
+    locations,
+    isLoading,
+    error
+  };
 };

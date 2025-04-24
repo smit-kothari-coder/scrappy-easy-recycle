@@ -1,9 +1,26 @@
-
 import { useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { createClient } from '@supabase/supabase-js';
 import { v4 as uuidv4 } from 'uuid';
 import type { Database } from '@/integrations/supabase/types';
 import { Pickup, Scrapper } from '@/types';
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('Missing Supabase environment variables');
+}
+
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true
+  },
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+  }
+});
 
 export const useSupabase = () => {
   const getCurrentUser = useCallback(async () => {
@@ -46,24 +63,67 @@ export const useSupabase = () => {
     time_slot: string;
     type: string[];
   }) => {
-    // Combine date and time_slot into pickup_time
-    const pickup_time = `${pickupData.date} ${pickupData.time_slot.split('(')[1].split(')')[0].split('-')[0].trim()}`;
-    
-    const { data, error } = await supabase
-      .from('pickups')
-      .insert({
+    try {
+      const pickupId = uuidv4();
+      
+      // Extract the time from the time slot and format it properly
+      const timeMatch = pickupData.time_slot.match(/(\d+)(?:AM|PM)/);
+      let hour = timeMatch ? parseInt(timeMatch[1]) : 8;
+      
+      // Convert to 24-hour format if PM
+      if (pickupData.time_slot.includes('PM') && hour !== 12) {
+        hour += 12;
+      }
+      // Handle 12 AM case
+      if (pickupData.time_slot.includes('AM') && hour === 12) {
+        hour = 0;
+      }
+      
+      // Format the hour to ensure it's two digits
+      const formattedHour = hour.toString().padStart(2, '0');
+      
+      // Combine date and time into proper PostgreSQL timestamp format
+      const pickup_time = `${pickupData.date} ${formattedHour}:00:00`;
+
+      console.log('Creating pickup request with data:', {
+        id: pickupId,
         user_id: pickupData.user_id,
         weight: pickupData.weight,
         address: pickupData.address,
         pickup_time: pickup_time,
         type: pickupData.type.join(','),
         status: 'Requested'
-      })
-      .select()
-      .single();
-    
-    if (error) throw error;
-    return data;
+      });
+      
+      const { data, error } = await supabase
+        .from('pickups')
+        .insert({
+          id: pickupId,
+          user_id: pickupData.user_id,
+          weight: pickupData.weight,
+          address: pickupData.address,
+          pickup_time: pickup_time, // Now in format: "2025-04-24 08:00:00"
+          type: pickupData.type.join(','),
+          status: 'Requested'
+        })
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Supabase error:', error);
+        throw new Error(error.message);
+      }
+
+      if (!data) {
+        throw new Error('No data returned from insert');
+      }
+      
+      console.log('Pickup request created successfully:', data);
+      return data;
+    } catch (error) {
+      console.error('Error in createPickupRequest:', error);
+      throw error;
+    }
   }, []);
 
   // New functions for scrapper dashboard
@@ -224,3 +284,12 @@ export const useSupabase = () => {
     supabase
   };
 };
+import { SessionContextProvider } from '@supabase/auth-helpers-react';
+import { ReactNode } from 'react';
+
+// SupabaseProvider wrapper for global auth/session context
+export const SupabaseProvider = ({ children }: { children: ReactNode }) => (
+  <SessionContextProvider supabaseClient={supabase}>
+    {children}
+  </SessionContextProvider>
+);
