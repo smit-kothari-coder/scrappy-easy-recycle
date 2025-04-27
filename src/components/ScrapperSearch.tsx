@@ -35,14 +35,15 @@ interface ScrapperSearchProps {
 
 export const ScrapperSearch: React.FC<ScrapperSearchProps> = ({
   selectedPincode = '',
-  onSelectScrapper
+  onSelectScrapper,
 }) => {
   const [pincode, setPincode] = useState(selectedPincode);
   const [scrappers, setScrappers] = useState<Scrapper[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // Trigger search if selectedPincode changes (from outside or manual entry)
   useEffect(() => {
-    if (selectedPincode) {
+    if (selectedPincode && selectedPincode !== pincode) {
       setPincode(selectedPincode);
       handleSearch();
     }
@@ -56,7 +57,7 @@ export const ScrapperSearch: React.FC<ScrapperSearchProps> = ({
 
     try {
       setLoading(true);
-      setScrappers([]);
+      setScrappers([]); // Clear previous results
 
       const pincodeRes = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
       if (!pincodeRes.ok) throw new Error('Failed to fetch pincode data');
@@ -79,26 +80,30 @@ export const ScrapperSearch: React.FC<ScrapperSearchProps> = ({
         throw new Error('Invalid coordinates received');
       }
 
+      // Fetch scrappers within a 10km radius using Supabase RPC function
       const { data, error } = await supabase.rpc('scrappers' as any, {
         lat: latitude,
         lon: longitude,
-        radius: 10000 // 10km in meters
+        radius: 10000, // 10km in meters
       });
 
       if (error) throw error;
       if (!Array.isArray(data)) throw new Error('Invalid response format');
 
-      const formattedScrappers = data.map((item: any) => ({
-        id: item.id?.toString() || '',
-        name: item.name || 'Unknown Scrapper',
-        address: item.address || '',
-        rating: Number(item.rating) || 0,
-        pincode: item.pincode?.toString() || '',
-        services: Array.isArray(item.services) ? item.services : [],
-        distance: (Number(item.distance) || 0) / 1000 // Convert meters to km
-      })).filter(scrapper =>
-        scrapper.id && scrapper.name && scrapper.pincode
-      );
+      const formattedScrappers = data
+        .map((item: any) => ({
+          id: item.id?.toString() || '',
+          name: item.name || 'Unknown Scrapper',
+          address: item.address || '',
+          rating: Number(item.rating) || 0,
+          pincode: item.pincode?.toString() || '',
+          services: Array.isArray(item.services) ? item.services : [],
+          distance: (Number(item.distance) || 0) / 1000, // Convert meters to km
+        }))
+        .filter(
+          (scrapper) =>
+            scrapper.id && scrapper.name && scrapper.pincode
+        );
 
       if (formattedScrappers.length === 0) {
         toast.info('No scrappers found in this area');
@@ -171,17 +176,11 @@ export const ScrapperSearch: React.FC<ScrapperSearchProps> = ({
                 </div>
               </div>
 
-              <p className="text-sm text-muted-foreground mt-2">
-                {scrapper.address}
-              </p>
+              <p className="text-sm text-muted-foreground mt-2">{scrapper.address}</p>
 
               <div className="mt-3 flex flex-wrap gap-2">
                 {scrapper.services.map((service) => (
-                  <Badge
-                    key={service}
-                    variant="secondary"
-                    className="capitalize"
-                  >
+                  <Badge key={service} variant="secondary" className="capitalize">
                     {service}
                   </Badge>
                 ))}

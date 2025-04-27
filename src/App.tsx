@@ -39,43 +39,45 @@ const App = () => (
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/faq" element={<FAQPage />} />
             <Route path="/contact" element={<ContactPage />} />
-            
+            {/* Route for User Dashboard */}
+            <Route path="/userdashboard" element={<UserDashboard />} />
+
             {/* Protected User Routes */}
-            <Route 
-              path="/user-dashboard" 
+            <Route
+              path="/user-dashboard"
               element={
                 <RequireAuth userType="user">
                   <UserDashboard />
                 </RequireAuth>
-              } 
+              }
             />
-            <Route 
-              path="/profile" 
+            <Route
+              path="/profile"
               element={
                 <RequireAuth userType="user">
                   <UserProfilePage />
                 </RequireAuth>
-              } 
+              }
             />
-            
+
             {/* Protected Scrapper Routes */}
-            <Route 
-              path="/scrapper-dashboard" 
+            <Route
+              path="/scrapper-dashboard"
               element={
                 <RequireAuth userType="scrapper">
                   <ScrapperDashboard />
                 </RequireAuth>
-              } 
+              }
             />
-            <Route 
-              path="/scrapper-profile" 
+            <Route
+              path="/scrapper-profile"
               element={
                 <RequireAuth userType="scrapper">
                   <ScrapperProfilePage />
                 </RequireAuth>
-              } 
+              }
             />
-            
+
             {/* 404 catch-all route */}
             <Route path="*" element={<NotFound />} />
           </Routes>

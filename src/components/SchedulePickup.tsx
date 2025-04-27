@@ -17,6 +17,7 @@ import { toast } from 'sonner';
 import WasteTypeSelector from './WasteTypeSelector';
 import { useAuth } from '@/hooks/useAuth';
 import { ScrapperSearch } from '@/components/ScrapperSearch';
+import { useNavigate } from 'react-router-dom';
 
 const pickupSchema = z.object({
   weight: z.coerce.number().min(7, { message: "Minimum 7kg required for pickup." }),
@@ -42,40 +43,33 @@ const timeSlotMap = {
 };
 
 export const getLatLongFromAddress = async () => {
-
   let latitude = 0;
   let longitude = 0;
 
   if (navigator.geolocation) {
-
-
     navigator.geolocation.getCurrentPosition(
       async function (position) {
         const latitude = position.coords.latitude;
         const longitude = position.coords.longitude;
-        // Use latitude and longitude as needed
         console.log("Latitude: " + latitude + ", Longitude: " + longitude);
       },
       async function (error) {
-        // Handle errors
         console.error("Error getting location:", error);
       }
     );
   } else {
-    // Geolocation is not supported
     console.log("Geolocation is not supported by this browser.");
   }
   return { latitude, longitude };
-
 };
+
 const SchedulePickup = () => {
-
-
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { createPickupRequest } = useSupabase();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showScrapperSearch, setShowScrapperSearch] = useState(false);
-  const [searchTriggered, setSearchTriggered] = useState(false);
+  const [pincode, setPincode] = useState<string>(''); // Independent pincode for scrapper search
 
   const form = useForm<PickupFormValues>({
     resolver: zodResolver(pickupSchema),
@@ -92,11 +86,13 @@ const SchedulePickup = () => {
   const currentPincode = form.watch('pincode');
 
   useEffect(() => {
-    if (searchTriggered && !currentPincode) {
+    // Trigger the scrapper search as soon as the pincode is entered
+    if (pincode && pincode.length === 6) {
+      setShowScrapperSearch(true);
+    } else {
       setShowScrapperSearch(false);
-      setSearchTriggered(false);
     }
-  }, [currentPincode, searchTriggered]);
+  }, [pincode]);
 
   const onSubmit = async (data: PickupFormValues) => {
     if (!user) {
@@ -105,7 +101,6 @@ const SchedulePickup = () => {
     }
 
     const timeDetails = timeSlotMap[data.time_slot as keyof typeof timeSlotMap];
-    // timeDetails = {start:"abc", end:"xyz"}; // Reset timeDetails to avoid undefined error
     const fullAddress = `${data.streetAddress}, ${data.pincode}`;
 
     if (!timeDetails) {
@@ -114,7 +109,6 @@ const SchedulePickup = () => {
     }
 
     const { latitude, longitude } = await getLatLongFromAddress();
-
 
     setIsSubmitting(true);
     try {
@@ -137,17 +131,6 @@ const SchedulePickup = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleScrapperSearch = () => {
-    if (!form.getValues('pincode')) {
-      form.setError('pincode', { message: 'Enter pincode to search scrappers' });
-      return;
-    }
-    if (form.formState.errors.pincode) return;
-
-    setSearchTriggered(true);
-    setShowScrapperSearch(true);
   };
 
   return (
@@ -303,39 +286,31 @@ const SchedulePickup = () => {
       </section>
 
       <section className="mt-8 pt-6 border-t border-gray-200">
+        {/* Independent Pincode Input for Scrapper Search */}
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">Find Nearby Scrappers</h3>
-          <Button
-            onClick={handleScrapperSearch}
-            className="bg-scrap-blue hover:bg-scrap-blue/90"
-            disabled={!currentPincode || !!form.formState.errors.pincode || isSubmitting}
-            variant="outline"
-          >
-            {isSubmitting ? "Searching..." : (showScrapperSearch ? "Refresh Results" : "Search Scrappers")}
-          </Button>
         </div>
 
-        {form.formState.errors.pincode?.message && searchTriggered && (
-          <div className="text-red-500 text-sm mb-4">
-            {form.formState.errors.pincode.message}
-          </div>
-        )}
+        {/* Pincode input field for independent search */}
+        <div className="mb-4">
+          <Input
+            value={pincode}
+            onChange={(e) => setPincode(e.target.value)}
+            placeholder="Enter pincode to find scrapper"
+            maxLength={6}
+            className="bg-gray-50 border-gray-200"
+          />
+        </div>
 
-        {showScrapperSearch ? (
+        {/* Scrapper search results will be shown automatically when pincode is entered */}
+        {showScrapperSearch && (
           <ScrapperSearch
-            key={currentPincode}
-            selectedPincode={currentPincode}
+            selectedPincode={pincode}  // Use independent pincode
             onSelectScrapper={(scrapper) => {
               toast.success(`Scrapper ${scrapper.name} assigned!`);
-              setShowScrapperSearch(false);
+              setShowScrapperSearch(false);  // Hide search results once a scrapper is selected
             }}
           />
-        ) : (
-          <div className="text-gray-500 text-center py-4">
-            {currentPincode
-              ? "Click 'Search Scrappers' to view available partners"
-              : "Enter a pincode to search for scrappers"}
-          </div>
         )}
       </section>
     </div>
