@@ -3,45 +3,17 @@ import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useBusinessLocationScraper } from '@/hooks/useBusinessLocationScraper';
-import { MapContainer, TileLayer, Marker, Popup, MapContainerProps } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
 
-// Fix for default marker icon
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-});
 
-// Define props with proper types
-interface ExtendedMapContainerProps extends MapContainerProps {
-  center: L.LatLngExpression;
-  zoom: number;
-  style?: React.CSSProperties;
-  className?: string;
-}
 
 const BusinessLocationScraper: React.FC = () => {
   const [url, setUrl] = useState('');
   const { scrapeBusinessLocation, locations, isLoading } = useBusinessLocationScraper();
-  const [mapKey, setMapKey] = useState(0);
 
   const handleScrape = () => {
     scrapeBusinessLocation(url);
   };
 
-  const defaultPosition: [number, number] = [51.505, -0.09]; // London as default
-  const mapCenter = locations.length > 0
-    ? [locations[locations.length - 1].latitude, locations[locations.length - 1].longitude] as [number, number]
-    : defaultPosition;
-    
-  useEffect(() => {
-    if (locations.length > 0) {
-      setMapKey(prev => prev + 1);
-    }
-  }, [locations]);
 
   return (
     <div className="space-y-4">
@@ -55,35 +27,6 @@ const BusinessLocationScraper: React.FC = () => {
         <Button onClick={handleScrape} disabled={isLoading} className="text-base py-2 px-4">
           {isLoading ? 'Scraping...' : 'Scrape'}
         </Button>
-      </div>
-
-      <div key={mapKey} className="w-full h-[400px]">
-        <MapContainer 
-          center={mapCenter}
-          zoom={locations.length ? 13 : 2} 
-          style={{ height: '400px', width: '100%' }}
-          className="w-full h-full rounded-lg"
-          {...{} as ExtendedMapContainerProps}
-        >
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            {...{attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'} as any}
-          />
-          {locations.map((location) => (
-            <Marker 
-              key={location.id}
-              position={[location.latitude, location.longitude]}
-            >
-              <Popup>
-                <div>
-                  <strong>{location.name}</strong>
-                  <p>{location.summary || ''}</p>
-                  <small>{location.address}</small>
-                </div>
-              </Popup>
-            </Marker>
-          ))}
-        </MapContainer>
       </div>
     </div>
   );

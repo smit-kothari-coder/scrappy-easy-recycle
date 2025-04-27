@@ -1,153 +1,157 @@
+// src/hooks/useSupabase.ts
 
 import { useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { v4 as uuidv4 } from 'uuid';
 import type { Database } from '@/integrations/supabase/types';
 import { Pickup, Scrapper } from '@/types';
+// import { getLatLongFromAddress } from '@/components/SchedulePickup';
+
+
+type PickupRequestPayload = {
+  user_id: string;
+  weight: number;
+  address: string;
+  date: string;
+  time_slot: { start: string; end: string };
+  type: string;
+  pincode: string;
+  latitude?: number;
+  longitude?: number;
+  price?: number;
+  scrapper_id?: string;
+};
 
 export const useSupabase = () => {
+  // User management
   const getCurrentUser = useCallback(async () => {
     const { data: { user }, error } = await supabase.auth.getUser();
-    if (error) throw error;
+    if (error) throw new Error(`Authentication error: ${error.message}`);
     return user;
   }, []);
 
   const getProfile = useCallback(async (userId: string) => {
-    // @ts-ignore - There might be a mismatch between the database schema and the types
     const { data, error } = await supabase
       .from('users')
       .select('*')
-      .eq('user_id', userId)
+      .eq('email', userId)
       .single();
-    
-    if (error) throw error;
-    return data;
+    if (error) throw new Error(`Profile fetch error: ${error.message}`);
+    return data as Database['public']['Tables']['users']['Row'];
   }, []);
 
   const updateProfile = useCallback(async (userId: string, updates: Partial<Database['public']['Tables']['users']['Update']>) => {
-    // @ts-ignore - There might be a mismatch between the database schema and the types
     const { data, error } = await supabase
       .from('users')
       .update(updates)
-      .eq('user_id', userId)
+      .eq('email', userId)
       .select()
       .single();
-    
-    if (error) throw error;
-    return data;
+    if (error) throw new Error(`Profile update error: ${error.message}`);
+    return data as Database['public']['Tables']['users']['Row'];
   }, []);
 
-  // Create a new pickup request
-  const createPickupRequest = useCallback(async (pickupData: {
-    user_id: string;
-    weight: number;
-    address: string;
-    date: string;
-    time_slot: string;
-    type: string[];
-  }) => {
-    // Combine date and time_slot into pickup_time
-    const pickup_time = `${pickupData.date} ${pickupData.time_slot.split('(')[1].split(')')[0].split('-')[0].trim()}`;
-    
+  // Pickup management
+  const createPickupRequest = useCallback(async (payload: PickupRequestPayload) => {
+    const pickupId = uuidv4();
+
+    // const { latitude, longitude } = await getLatLongFromAddress(payload.address);
+
+    console.log('Creating pickup request with type:', payload.type);
     const { data, error } = await supabase
       .from('pickups')
       .insert({
-        user_id: pickupData.user_id,
-        weight: pickupData.weight,
-        address: pickupData.address,
-        pickup_time: pickup_time,
-        type: pickupData.type.join(','),
-        status: 'Requested'
+        id: pickupId,
+        user_id: payload.user_id,
+        scrapper_id: payload.scrapper_id ?? null,
+        weight: payload.weight,
+        type: payload.type.toString(),
+        address: payload.address,
+        price: payload.price ?? 0,
+        status: 'Requested',
+        created_at: new Date().toISOString(),
+        latitude: payload.latitude,
+        longitude: payload.longitude,
+        pickup_time: new Date().toISOString(),
+        time_slot: `${payload.time_slot.start} - ${payload.time_slot.end}`,
+        pincode: payload.pincode,
+        date: payload.date,
       })
       .select()
-      .single();
-    
-    if (error) throw error;
-    return data;
-  }, []);
+      .single() as { data: Pickup | null; error: any };
 
-  // New functions for scrapper dashboard
-  const getScrapper = useCallback(async (scrapperEmail: string) => {
-    const { data, error } = await supabase
+    if (error) throw new Error(`Pickup creation error: ${error.message}`);
+    // Now we fetch scrappers based on the pincode of the pickup
+
+    const pincodeNumber = parseInt(payload.pincode, 10);
+    if (isNaN(pincodeNumber)) {
+      throw new Error('Invalid pincode');
+    }
+
+    const { data: scrappers, error: scrappersError } = await supabase
       .from('scrappers')
       .select('*')
-      .eq('email', scrapperEmail)
-      .single();
-    
-    if (error) throw error;
-    return data as unknown as Scrapper;
-  }, []);
+      .eq('available', true)
+      //.eq('pincode', pincodeNumber); // Match scrappers by pincode
 
-  const updateScrapper = useCallback(async (id: string, updates: Partial<Omit<Scrapper, 'availability_hours'> & { availability_hours: string, scrap_types?: string[] }>) => {
-    // If scrap_types is provided, convert it to a comma-separated string
-    if (updates.scrap_types) {
-      const formattedUpdates = {
-        ...updates,
-        scrap_types: updates.scrap_types.join(',')
-      };
-      
-      const { data, error } = await supabase
-        .from('scrappers')
-        .update(formattedUpdates as any)
-        .eq('id', id)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return data as unknown as Scrapper;
-    } else {
-      const { data, error } = await supabase
-        .from('scrappers')
-        .update(updates as any)
-        .eq('id', id)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return data as unknown as Scrapper;
+    if (scrappersError) {
+      console.error('Error fetching scrappers for pickup:', scrappersError);
     }
-  }, []);
 
-  const updateScrappperLocation = useCallback(async (id: string, latitude: number, longitude: number) => {
+    // If scrappers are found, send a notification or handle requests
+    if (scrappers && scrappers.length > 0) {
+      console.log('Found scrappers in the same area:', scrappers);
+      // Optional: Insert into a 'pickup_requests' table or send notification
+      // This is where you would notify or update scrappers with the new pickup request
+    }
+
+    return {
+      ...data,
+      date: payload.date,
+      time_slot: `${payload.time_slot.start} - ${payload.time_slot.end}`,
+      scrappers
+    } as Pickup;
+  }, []);
+  const updatePickupStatus = useCallback(async (pickupId: string, status: string) => {
     const { data, error } = await supabase
-      .from('scrappers')
-      .update({ latitude, longitude })
-      .eq('id', id)
+      .from('pickups')
+      .update({ status })
+      .eq('id', pickupId)
       .select()
       .single();
-    
-    if (error) throw error;
+
+    if (error) throw new Error(`Update pickup status error: ${error.message}`);
     return data;
   }, []);
 
-  const getPickupRequests = useCallback(async () => {
+  const getPickupRequests = useCallback(async (scrapperPincode: string) => {
     const { data, error } = await supabase
       .from('pickups')
-      .select('*, users!pickups_user_id_fkey(*)')
-      .is('scrapper_id', null)
-      .eq('status', 'Requested');
-    
-    if (error) throw error;
-    
-    // Use explicit type assertion to handle the join result
-    return (data as unknown) as (Pickup & { users: { name: string; phone: string } })[];
+      .select('*')
+      .is('user_id', null)
+      .eq('status', 'Requested')
+     // .eq('pincode', scrapperPincode); // 👈 Only pickups in same pincode
+
+    if (error) throw new Error(`Pickup requests error: ${error.message}`);
+    return data;
   }, []);
 
-  const acceptPickup = useCallback(async (pickupId: string, scraperId: string) => {
+  const acceptPickup = useCallback(async (pickupId: string, scrapperId: string) => {
     const { data, error } = await supabase
       .from('pickups')
-      .update({ 
-        scrapper_id: scraperId,
-        status: 'Scheduled'
+      .update({
+        scrapper_id: scrapperId,
+        status: 'Scheduled',
       })
       .eq('id', pickupId)
-      .select('*, users!pickups_user_id_fkey(*)')
+      .select(`
+        id,
+        user_id,
+        users:user_id (name, phone)
+      `)
       .single();
-    
-    if (error) throw error;
-    
-    // Use explicit type assertion to handle the join result
-    return (data as unknown) as (Pickup & { users: { name: string; phone: string } });
+    if (error) throw new Error(`Accept pickup error: ${error.message}`);
+    return data as Pickup & { users: { name: string; phone: string } };
   }, []);
 
   const rejectPickup = useCallback(async (pickupId: string) => {
@@ -155,45 +159,49 @@ export const useSupabase = () => {
       .from('pickups')
       .update({ status: 'Rejected' })
       .eq('id', pickupId);
-    
-    if (error) throw error;
+    if (error) throw new Error(`Reject pickup error: ${error.message}`);
     return true;
   }, []);
 
-  const updatePickupStatus = useCallback(async (pickupId: string, status: 'En Route' | 'Arrived' | 'Completed') => {
+  // Scrapper management
+  const updateScrapper = useCallback(async (id: string, updates: Partial<Scrapper> & { availability_hours?: string; scrap_types?: string[] }) => {
+    const formattedUpdates = {
+      ...updates,
+      ...(updates.scrap_types && { scrap_types: updates.scrap_types.join(', ') }),
+    };
     const { data, error } = await supabase
-      .from('pickups')
-      .update({ status })
-      .eq('id', pickupId)
+      .from('scrappers')
+      .update(formattedUpdates)
+      .eq('id', id)
       .select()
       .single();
-    
-    if (error) throw error;
-    return data as unknown as Pickup;
+    if (error) throw new Error(`Scrapper update error: ${error.message}`);
+    return data as Scrapper;
   }, []);
 
-  const getActivePickup = useCallback(async (scraperId: string) => {
+  const updateScrapperLocation = useCallback(async (id: string, lat: number, lng: number) => {
+    const { data, error } = await supabase
+      .from('scrappers')
+      .update({ latitude: lat, longitude: lng })
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) throw new Error(`Location update error: ${error.message}`);
+    return data as Scrapper;
+  }, []);
+
+  // Utilities
+  const getActivePickup = useCallback(async (scrapperId: string) => {
     const { data, error } = await supabase
       .from('pickups')
-      .select('*, users!pickups_user_id_fkey(*)')
-      .eq('scrapper_id', scraperId)
+      .select('*')
+      .eq('scrapper_id', scrapperId)
       .in('status', ['Scheduled', 'En Route', 'Arrived'])
-      .single();
-    
-    if (error && error.code !== 'PGRST116') throw error;
-    
-    // Use explicit type assertion to handle the join result and the null case
-    return data ? ((data as unknown) as (Pickup & { users: { name: string; phone: string } })) : null;
+      .maybeSingle();
+    if (error) throw new Error(`Active pickup error: ${error.message}`);
+    return data;
   }, []);
 
-  // Function to logout user
-  const logout = useCallback(async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
-    return true;
-  }, []);
-
-  // Get all active scrappers with their locations
   const getActiveScrappers = useCallback(async () => {
     const { data, error } = await supabase
       .from('scrappers')
@@ -201,9 +209,14 @@ export const useSupabase = () => {
       .eq('available', true)
       .not('latitude', 'is', null)
       .not('longitude', 'is', null);
-    
-    if (error) throw error;
+    if (error) throw new Error(`Active scrappers error: ${error.message}`);
     return data as Scrapper[];
+  }, []);
+
+  const logout = useCallback(async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw new Error(`Logout error: ${error.message}`);
+    return true;
   }, []);
 
   return {
@@ -211,16 +224,13 @@ export const useSupabase = () => {
     getProfile,
     updateProfile,
     createPickupRequest,
-    getScrapper,
-    updateScrapper,
-    updateScrappperLocation,
     getPickupRequests,
     acceptPickup,
     rejectPickup,
-    updatePickupStatus,
+    updateScrapper,
+    updateScrapperLocation,
     getActivePickup,
-    logout,
     getActiveScrappers,
-    supabase
+    logout,
   };
 };

@@ -1,3 +1,4 @@
+// types/index.ts
 
 export type Profile = {
   id: string;
@@ -55,9 +56,10 @@ export type Pickup = {
   user_id: string;
   scrapper_id: string | null;
   weight: number;
-  type: string;
+  type: string[];
   address: string;
-  pickup_time: string;
+  date: string;          // ✅ added
+  time_slot: string;     // ✅ added
   price: number | null;
   status: 'Requested' | 'Scheduled' | 'En Route' | 'Arrived' | 'Completed' | 'Rejected';
   latitude: number | null;

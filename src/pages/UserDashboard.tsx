@@ -1,4 +1,3 @@
-
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,7 +6,6 @@ import SchedulePickup from '@/components/SchedulePickup';
 import PickupHistory from '@/components/PickupHistory';
 import PointsSection from '@/components/PointsSection';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import ScrapperMap from '@/components/ScrapperMap';
 import { useAuth } from '@/hooks/useAuth';
 
 const UserDashboard = () => {
@@ -60,23 +58,11 @@ const UserDashboard = () => {
                 <SchedulePickup />
               </CardContent>
             </Card>
-            
-            <Card className="mt-6">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Map className="w-5 h-5" />
-                  Find Nearby Scrappers
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ScrapperMap />
-              </CardContent>
-            </Card>
           </TabsContent>
           
           <TabsContent value="history" className="animate-fade-in">
             <Card>
-              <CardHeader>
+              <CardHeader>  
                 <CardTitle className="flex items-center gap-2">
                   <History className="w-5 h-5" />
                   Pickup History

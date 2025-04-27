@@ -18,6 +18,8 @@ export type Database = {
           longitude: number
           name: string
           summary: string | null
+          type: string[]; // Define as array type
+
         }
         Insert: {
           address: string
@@ -27,6 +29,8 @@ export type Database = {
           longitude: number
           name: string
           summary?: string | null
+          type: string[]; // Define as array type
+
         }
         Update: {
           address?: string
@@ -36,6 +40,8 @@ export type Database = {
           longitude?: number
           name?: string
           summary?: string | null
+          type?: string[]; // Define as array type
+
         }
         Relationships: []
       }
@@ -95,7 +101,7 @@ export type Database = {
           price: number | null
           scrapper_id: string | null
           status: string | null
-          type: string
+          type: string[]
           user_id: string | null
           weight: number
         }
