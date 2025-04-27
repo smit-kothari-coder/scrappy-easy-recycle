@@ -92,7 +92,7 @@ export const useSupabase = () => {
       .from('scrappers')
       .select('*')
       .eq('available', true)
-      //.eq('pincode', pincodeNumber); // Match scrappers by pincode
+      .eq('pincode', pincodeNumber); // Match scrappers by pincode
 
     if (scrappersError) {
       console.error('Error fetching scrappers for pickup:', scrappersError);
@@ -130,7 +130,7 @@ export const useSupabase = () => {
       .select('*')
       .is('user_id', null)
       .eq('status', 'Requested')
-     // .eq('pincode', scrapperPincode); // 👈 Only pickups in same pincode
+     .eq('pincode', scrapperPincode); // 👈 Only pickups in same pincode
 
     if (error) throw new Error(`Pickup requests error: ${error.message}`);
     return data;
@@ -151,7 +151,13 @@ export const useSupabase = () => {
       `)
       .single();
     if (error) throw new Error(`Accept pickup error: ${error.message}`);
-    return data as Pickup & { users: { name: string; phone: string } };
+    if (!data || !data.users || !Array.isArray(data.users) || data.users.length === 0) {
+      throw new Error('Invalid data structure: users field is missing or empty');
+    }
+    return {
+      ...data,
+      users: data.users[0],
+    } as Pickup & { users: { name: string; phone: string } };
   }, []);
 
   const rejectPickup = useCallback(async (pickupId: string) => {

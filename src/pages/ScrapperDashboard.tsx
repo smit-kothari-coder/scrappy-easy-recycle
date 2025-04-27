@@ -1,13 +1,37 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Truck, Clock, Settings, Leaf } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { Button } from '@/components/ui/button';
+import { supabase } from '@/integrations/supabase/client';
+import React from 'react';
 
 const ScrapperDashboard = () => {
+  const navigate = useNavigate(); // ✅ Move useNavigate here
+
+  const handleLogout = () => {
+    // Clear session or authentication tokens (adjust as needed)
+    sessionStorage.clear();  // or localStorage.clear();
+    
+    // Redirect the user to the home page
+    navigate('/'); // This redirects to the home page
+};
   return (
     <div className="p-6 min-h-screen bg-gradient-to-br from-white to-green-50">
-      <h1 className="text-3xl font-bold mb-6 text-green-800">Welcome, Scrapper!</h1>
+      {/* Header with Logout */}
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold text-green-800">Welcome, Scrapper!</h1>
 
+        {/* Logout Button */}
+        <Button 
+          onClick={handleLogout} 
+          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md"
+        >
+          Logout
+        </Button>
+      </div>
+
+      {/* Cards Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Vehicle Info */}
         <Card className="shadow-xl rounded-2xl">
@@ -17,8 +41,12 @@ const ScrapperDashboard = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-700">Vehicle Type: <strong>Mini Truck</strong></p>
-            <p className="text-sm text-gray-700">Registered No: <strong>GJ01AB1234</strong></p>
+            <p className="text-sm text-gray-700">
+              Vehicle Type: <strong>Mini Truck</strong>
+            </p>
+            <p className="text-sm text-gray-700">
+              Registered No: <strong>GJ01AB1234</strong>
+            </p>
           </CardContent>
         </Card>
 
@@ -30,7 +58,9 @@ const ScrapperDashboard = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-700">Available: <strong>9:00 AM - 9:00 PM</strong></p>
+            <p className="text-sm text-gray-700">
+              Available: <strong>9:00 AM - 9:00 PM</strong>
+            </p>
           </CardContent>
         </Card>
 
@@ -60,7 +90,9 @@ const ScrapperDashboard = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-600 mb-2">Manage your availability, scrap types, and update password from the profile section.</p>
+            <p className="text-sm text-gray-600 mb-2">
+              Manage your availability, scrap types, and update password from the profile section.
+            </p>
             <Link 
               to="/profile" 
               className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md shadow inline-block"
