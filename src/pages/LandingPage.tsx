@@ -15,7 +15,7 @@ import {
   BookOpen,
 } from "lucide-react";
 import { useState } from "react";
-import SolutionFormModal  from "../components/SolutionFormModal";
+import SolutionFormModal from "../components/SolutionFormModal";
 
 const reviews = [
   {
@@ -74,7 +74,8 @@ const LandingPage = () => {
             Smart Recycling Made Simple &amp; Rewarding
           </h2>
           <p className="text-lg text-white mb-8 max-w-md opacity-90 font-medium mx-auto">
-            Your effortless and eco-friendly way to get rid of household and business scrap.
+            Your effortless and eco-friendly way to get rid of household and
+            business scrap.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/signin">
@@ -93,7 +94,9 @@ const LandingPage = () => {
 
       {/* Scrap Categories */}
       <section className="py-12 bg-white text-center">
-        <h2 className="text-3xl font-bold text-gray-800 mb-6">What We Collect</h2>
+        <h2 className="text-3xl font-bold text-gray-800 mb-6">
+          What We Collect
+        </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 max-w-5xl mx-auto px-4">
           {[
             { icon: <Recycle />, label: "Plastic" },
@@ -116,8 +119,12 @@ const LandingPage = () => {
       {/* Solutions by Industry */}
       <section className="py-12 bg-green-50 w-full">
         <div className="max-w-6xl mx-auto px-4 text-center">
-          <p className="text-green-700 font-medium mb-2 italic">Industries We Serve</p>
-          <h2 className="text-4xl font-extrabold mb-8 text-gray-800">Solutions by Industry</h2>
+          <p className="text-green-700 font-medium mb-2 italic">
+            Industries We Serve
+          </p>
+          <h2 className="text-4xl font-extrabold mb-8 text-gray-800">
+            Solutions by Industry
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               {
@@ -141,9 +148,15 @@ const LandingPage = () => {
                 onClick={() => handleSolutionClick(label)}
                 className="cursor-pointer bg-white shadow rounded-lg overflow-hidden hover:shadow-lg transition"
               >
-                <img src={img} alt={label} className="w-full h-48 object-cover" />
+                <img
+                  src={img}
+                  alt={label}
+                  className="w-full h-48 object-cover"
+                />
                 <div className="p-4">
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">{label}</h3>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                    {label}
+                  </h3>
                   <p className="text-gray-600 text-sm">{desc}</p>
                 </div>
               </div>
@@ -153,7 +166,11 @@ const LandingPage = () => {
       </section>
 
       {/* Modal */}
-      <SolutionFormModal isOpen={isModalOpen} onClose={handleCloseModal} category={selectedSolution} />
+      <SolutionFormModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        category={selectedSolution}
+      />
 
       {/* How It Works */}
       <section className="w-full py-12 px-3 sm:px-0 flex flex-col items-center">
@@ -162,16 +179,47 @@ const LandingPage = () => {
         </h2>
         <div className="max-w-4xl w-full flex flex-col md:flex-row gap-6 items-stretch justify-center">
           {[
-            { icon: <User size={36} className="text-scrap-blue" />, title: "Sign Up / Log In", desc: "Register as a user or scrapper." },
-            { icon: <Recycle size={36} className="text-[#28a745]" />, title: "Choose Scrap Type", desc: "Select waste materials you want to recycle." },
-            { icon: <Calendar size={36} className="text-scrap-blue" />, title: "Schedule a Pickup", desc: "Pick your preferred date & time." },
-            { icon: <Check size={36} className="text-scrap-green" />, title: "Track & Confirm", desc: "Get updates and confirm successful pickups." },
-            { icon: <Award size={36} className="text-yellow-500" />, title: "Get Rewarded", desc: "Earn points or cashback for recycling." },
+            {
+              icon: <User size={36} className="text-scrap-blue mx-auto" />,
+              step: "Step 1",
+              title: "Sign Up / Log In",
+              desc: "Register as a user or scrapper.",
+            },
+            {
+              icon: <Recycle size={36} className="text-[#28a745] mx-auto" />,
+              step: "Step 2",
+              title: "Choose Scrap Type",
+              desc: "Select waste materials you want to recycle.",
+            },
+            {
+              icon: <Calendar size={36} className="text-scrap-blue mx-auto" />,
+              step: "Step 3",
+              title: "Schedule a Pickup",
+              desc: "Pick your preferred date & time.",
+            },
+            {
+              icon: <Check size={36} className="text-scrap-green mx-auto" />,
+              step: "Step 4",
+              title: "Track & Confirm",
+              desc: "Get updates and confirm successful pickups.",
+            },
+            {
+              icon: <Award size={36} className="text-yellow-500 mx-auto" />,
+              step: "Step 5",
+              title: "Get Rewarded",
+              desc: "Earn points or cashback for recycling.",
+            },
           ].map((step, i) => (
-            <div key={i} className="flex-1 bg-white rounded-2xl shadow-md p-6 flex flex-col items-center animate-fade-in">
+            <div
+              key={i}
+              className="flex-1 bg-white rounded-2xl shadow-md p-6 flex flex-col items-center animate-fade-in text-center"
+            >
               {step.icon}
-              <span className="text-lg font-semibold mb-1">{step.title}</span>
-              <p className="text-gray-600 text-center text-sm">{step.desc}</p>
+              <div className="text-sm text-gray-500 font-semibold mt-2 mb-1">
+                {step.step}
+              </div>
+              <div className="text-lg font-semibold mb-1">{step.title}</div>
+              <p className="text-gray-600 text-sm">{step.desc}</p>
             </div>
           ))}
         </div>
@@ -193,7 +241,10 @@ const LandingPage = () => {
               About the Web App
             </h2>
             <p className="text-lg text-[#292C43] font-medium">
-              ScrapEasy is a smart waste collection and recycling platform that connects users with registered scrappers for eco-friendly scrap disposal. Our goal is to make recycling easy, efficient, and rewarding for everyone.
+              ScrapEasy is a smart waste collection and recycling platform that
+              connects users with registered scrappers for eco-friendly scrap
+              disposal. Our goal is to make recycling easy, efficient, and
+              rewarding for everyone.
             </p>
           </div>
         </div>
@@ -207,7 +258,10 @@ const LandingPage = () => {
         </h2>
         <div className="flex flex-col sm:flex-row justify-center gap-6 max-w-4xl px-3 w-full">
           {reviews.map((r) => (
-            <div key={r.name} className="bg-white p-6 rounded-2xl shadow-md flex flex-col items-center w-full sm:w-1/3">
+            <div
+              key={r.name}
+              className="bg-white p-6 rounded-2xl shadow-md flex flex-col items-center w-full sm:w-1/3"
+            >
               <img
                 src={r.avatar}
                 alt={`Avatar of ${r.name}`}
@@ -215,8 +269,12 @@ const LandingPage = () => {
                 loading="lazy"
               />
               <div className="mb-2">{getStars(r.rating)}</div>
-              <p className="text-gray-700 italic text-center text-sm mb-2">&quot;{r.text}&quot;</p>
-              <span className="text-sm font-semibold text-scrap-blue">{r.name}</span>
+              <p className="text-gray-700 italic text-center text-sm mb-2">
+                &quot;{r.text}&quot;
+              </p>
+              <span className="text-sm font-semibold text-scrap-blue">
+                {r.name}
+              </span>
             </div>
           ))}
         </div>
@@ -225,11 +283,17 @@ const LandingPage = () => {
       {/* Footer */}
       <footer className="bg-gray-100 py-6 mt-auto text-center">
         <div className="scrap-container max-w-[600px] mx-auto">
-          <p className="text-gray-600 text-base">© 2025 ScrapEasy. All rights reserved.</p>
+          <p className="text-gray-600 text-base">
+            © 2025 ScrapEasy. All rights reserved.
+          </p>
           <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-6 mt-2 text-base">
-            <Link to="/faq" className="text-scrap-blue hover:underline">FAQ</Link>
+            <Link to="/faq" className="text-scrap-blue hover:underline">
+              FAQ
+            </Link>
             <span className="text-gray-500">|</span>
-            <span className="text-scrap-blue">📧 smit.kothari@aissmsioit.org</span>
+            <span className="text-scrap-blue">
+              📧 smit.kothari@aissmsioit.org
+            </span>
           </div>
         </div>
       </footer>
