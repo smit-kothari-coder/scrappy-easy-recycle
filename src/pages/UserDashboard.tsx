@@ -5,19 +5,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { calculateRecyclingImpact } from "@/lib/conversions";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
-import { AppUser, ScrapType } from "@/types"; // Import the correct types
-import PickupHistory from "@/components/PickupHistory"; // Import the PickupHistory component
-import SchedulePickup from "@/components/SchedulePickup"; // Import the SchedulePickup component
+import { AppUser, ScrapType } from "@/types";
+import PickupHistory from "@/components/PickupHistory";
+import SchedulePickup from "@/components/SchedulePickup";
+import ScrapperSearch from "@/components/ScrapperSearch";
 
 const UserDashboard = () => {
   const { signOut, user } = useAuth();
-
-  // Casting the user to AppUser type
   const appUser = user as unknown as AppUser;
 
   const totalKg = appUser.scrapKg || 0;
   const types = appUser.scrapType || [];
-
   const weightPerType = types.length > 0 ? totalKg / types.length : 0;
 
   const totalImpact = types.reduce(
@@ -67,19 +65,35 @@ const UserDashboard = () => {
         </div>
 
         <Tabs defaultValue="schedule" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="schedule" className="text-base py-2">
+          <TabsList className="grid w-full grid-cols-4 gap-2">
+            <TabsTrigger
+              value="schedule"
+              className="text-base py-2 data-[state=active]:bg-green-100 data-[state=active]:text-green-800 rounded-md transition"
+            >
               Schedule Pickup
             </TabsTrigger>
-            <TabsTrigger value="history" className="text-base py-2">
+            <TabsTrigger
+              value="find"
+              className="text-base py-2 data-[state=active]:bg-green-100 data-[state=active]:text-green-800 rounded-md transition"
+            >
+              Nearby Scrappers
+            </TabsTrigger>
+            <TabsTrigger
+              value="history"
+              className="text-base py-2 data-[state=active]:bg-green-100 data-[state=active]:text-green-800 rounded-md transition"
+            >
               History
             </TabsTrigger>
-            <TabsTrigger value="impact" className="text-base py-2">
+
+            <TabsTrigger
+              value="impact"
+              className="text-base py-2 data-[state=active]:bg-green-100 data-[state=active]:text-green-800 rounded-md transition"
+            >
               Impact
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="schedule" className="animate-fade-in">
+          <TabsContent value="schedule">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -93,7 +107,7 @@ const UserDashboard = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="history" className="animate-fade-in">
+          <TabsContent value="history">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -107,7 +121,21 @@ const UserDashboard = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="impact" className="animate-fade-in">
+          <TabsContent value="find" className="animate-fade-in">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Map className="w-5 h-5" />
+                  Nearby Scrappers
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ScrapperSearch />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="impact">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">

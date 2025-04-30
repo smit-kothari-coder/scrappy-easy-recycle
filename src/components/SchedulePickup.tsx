@@ -1,31 +1,56 @@
-import { useState, useEffect } from 'react';
-import { string, z } from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { CalendarIcon } from 'lucide-react';
-import { format } from 'date-fns';
+import { useState, useEffect } from "react";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { useLocation, useNavigate } from "react-router-dom";
 
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { cn } from '@/lib/utils';
-import { useSupabase } from '@/hooks/useSupabase';
-import { toast } from 'sonner';
-import WasteTypeSelector from './WasteTypeSelector';
-import { useAuth } from '@/hooks/useAuth';
-import { ScrapperSearch } from '@/components/ScrapperSearch';
-import { useNavigate } from 'react-router-dom';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
+import { useSupabase } from "@/hooks/useSupabase";
+import { toast } from "sonner";
+import WasteTypeSelector from "./WasteTypeSelector";
+import { useAuth } from "@/hooks/useAuth";
+import { ScrapperSearch } from "@/components/ScrapperSearch";
 
 const pickupSchema = z.object({
-  weight: z.coerce.number().min(7, { message: "Minimum 7kg required for pickup." }),
-  streetAddress: z.string().min(10, { message: "Please enter a complete street address." }),
-  pincode: z.string().regex(/^\d{6}$/, { message: "Please enter a valid 6-digit pincode" }),
+  weight: z.coerce
+    .number()
+    .min(7, { message: "Minimum 7kg required for pickup." }),
+  streetAddress: z
+    .string()
+    .min(10, { message: "Please enter a complete street address." }),
+  pincode: z
+    .string()
+    .regex(/^\d{6}$/, { message: "Please enter a valid 6-digit pincode" }),
   date: z.date({ required_error: "Please select a date." }),
   time_slot: z.string().min(1, { message: "Please select a time slot." }),
-  type: z.array(z.string()).min(1, { message: "Please select at least one waste type." }),
+  type: z
+    .array(z.string())
+    .min(1, { message: "Please select at least one waste type." }),
 });
 
 type PickupFormValues = z.infer<typeof pickupSchema>;
@@ -46,23 +71,24 @@ const SchedulePickup = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { createPickupRequest } = useSupabase();
+  const location = useLocation();
+  const pickupData = location.state?.pickupData;
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showScrapperSearch, setShowScrapperSearch] = useState(false);
-  const [pincode, setPincode] = useState<string>('');
+  const [pincode, setPincode] = useState<string>(pickupData?.pincode || "");
 
   const form = useForm<PickupFormValues>({
     resolver: zodResolver(pickupSchema),
     defaultValues: {
-      weight: 0,
-      streetAddress: '',
-      pincode: '',
-      date: undefined,
-      time_slot: '',
-      type: [],
+      weight: pickupData?.weight || 0,
+      streetAddress: pickupData?.streetAddress || "",
+      pincode: pickupData?.pincode || "",
+      date: pickupData?.date ? new Date(pickupData.date) : undefined,
+      time_slot: pickupData?.time_slot || "",
+      type: pickupData?.type || [],
     },
   });
-
-  const currentPincode = form.watch('pincode');
 
   useEffect(() => {
     if (pincode && pincode.length === 6) {
@@ -86,7 +112,7 @@ const SchedulePickup = () => {
       return;
     }
 
-    const { latitude, longitude } = await getLatLongFromAddress();
+    const { latitude, longitude } = await getLatLongFromAddress(fullAddress);
 
     setIsSubmitting(true);
     try {
@@ -94,18 +120,30 @@ const SchedulePickup = () => {
         user_id: user.id,
         weight: Number(data.weight),
         address: data.streetAddress,
-        date: format(data.date, 'yyyy-MM-dd'),
+        date: format(data.date, "yyyy-MM-dd"),
         time_slot: timeDetails,
         type: data.type.toString(),
         pincode: data.pincode,
-        latitude: latitude,
-        longitude: longitude,
+        latitude,
+        longitude,
       });
 
       toast.success("Pickup scheduled successfully!");
+      navigate("/pickup-summary", {
+        state: {
+          pickupData: {
+            ...data,
+            formattedDate: format(data.date, "PPP"),
+            fullAddress: `${data.streetAddress}, ${data.pincode}`,
+          },
+        },
+      });
       form.reset();
     } catch (error: any) {
-      toast.error(error?.message || "Failed to schedule pickup. Please check your inputs and try again.");
+      toast.error(
+        error?.message ||
+          "Failed to schedule pickup. Please check your inputs and try again."
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -114,7 +152,9 @@ const SchedulePickup = () => {
   return (
     <div className="p-4 md:p-6 bg-white rounded-lg shadow max-w-2xl mx-auto">
       <section>
-        <h2 className="text-xl font-semibold mb-4 text-scrap-blue">Schedule a Pickup</h2>
+        <h2 className="text-xl font-semibold mb-4 text-scrap-blue">
+          Schedule a Pickup
+        </h2>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
@@ -122,7 +162,9 @@ const SchedulePickup = () => {
               name="weight"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-medium">Waste Weight (kg)</FormLabel>
+                  <FormLabel className="font-medium">
+                    Waste Weight (kg)
+                  </FormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -167,6 +209,10 @@ const SchedulePickup = () => {
                       {...field}
                       maxLength={6}
                       className="bg-gray-50 border-gray-200"
+                      onChange={(e) => {
+                        field.onChange(e);
+                        setPincode(e.target.value);
+                      }}
                     />
                   </FormControl>
                   <FormMessage />
@@ -186,20 +232,19 @@ const SchedulePickup = () => {
                         <Button
                           variant="outline"
                           className={cn(
-                            "w-full pl-3 text-left font-normal border-gray-200 bg-gray-50",
+                            "w-full pl-3 text-left font-normal border-gray-200 bg-white",
                             !field.value && "text-muted-foreground"
                           )}
                         >
-                          {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
+                          {field.value
+                            ? format(field.value, "PPP")
+                            : "Pick a date"}
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
                     <PopoverContent
-                      className={cn(
-                        "w-auto p-0 opacity-90 transition-opacity duration-200 ease-in-out z-50",
-                        field.value && "opacity-100"
-                      )}
+                      className="w-auto p-0 bg-white"
                       align="start"
                     >
                       <Calendar
@@ -224,11 +269,11 @@ const SchedulePickup = () => {
                   <FormLabel className="font-medium">Preferred Time</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <SelectTrigger className="bg-gray-50 border-gray-200 opacity-90 transition-opacity duration-200 ease-in-out">
+                      <SelectTrigger className="bg-white border-gray-200">
                         <SelectValue placeholder="Select time slot" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
+                    <SelectContent className="bg-white">
                       {timeSlots.map((slot) => (
                         <SelectItem key={slot} value={slot}>
                           {slot}
@@ -259,35 +304,42 @@ const SchedulePickup = () => {
             />
 
             <Button
-              type="submit"
-              className="w-full bg-scrap-green hover:bg-scrap-green/90 mt-6"
-              disabled={isSubmitting}
+              type="button"
+              className="w-full bg-scrap-blue hover:bg-scrap-blue/90 mt-4"
+              onClick={async () => {
+                const isValid = await form.trigger();
+                if (!isValid) {
+                  toast.error("Please fill all required fields correctly.");
+                  return;
+                }
+
+                const data = form.getValues();
+
+                navigate("/pickup-summary", {
+                  state: {
+                    pickupData: {
+                      ...data,
+                      formattedDate: format(data.date, "PPP"),
+                      fullAddress: `${data.streetAddress}, ${data.pincode}`,
+                    },
+                  },
+                });
+              }}        
             >
-              {isSubmitting ? "Scheduling..." : "Schedule Pickup"}
+              Search Scrappers
             </Button>
           </form>
         </Form>
-      </section>
-
-      <section className="mt-8 pt-6 border-t border-gray-200">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">Find Nearby Scrappers</h3>
-        </div>
-
-        <ScrapperSearch
-          selectedPincode={pincode}  
-          onSelectScrapper={(scrapper) => {
-            toast.success(`Scrapper ${scrapper.name} assigned!`);
-            setShowScrapperSearch(false);
-          }}
-        />
       </section>
     </div>
   );
 };
 
 export default SchedulePickup;
-function getLatLongFromAddress(): { latitude: any; longitude: any; } | PromiseLike<{ latitude: any; longitude: any; }> {
-  throw new Error('Function not implemented.');
-}
 
+async function getLatLongFromAddress(address: string) {
+  return {
+    latitude: 0,
+    longitude: 0,
+  };
+}

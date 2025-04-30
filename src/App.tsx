@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -20,6 +19,7 @@ import ScrapperProfilePage from "./pages/ScrapperProfilePage";
 import { AuthProvider } from "./hooks/useAuth";
 import RequireAuth from "./components/RequireAuth";
 import "./styles/scrap.css";
+import PickupSummary from "./pages/PickupSummary"; // <- Add this at the top
 
 const queryClient = new QueryClient();
 
@@ -35,13 +35,13 @@ const App = () => (
             <Route path="/" element={<LandingPage />} />
             <Route path="/signup" element={<SignUpPage />} />
             <Route path="/signin" element={<SignInPage />} />
-            <Route path="/login" element={<SignInPage />} /> {/* Alias for signin */}
+            <Route path="/login" element={<SignInPage />} />{" "}
+            {/* Alias for signin */}
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/faq" element={<FAQPage />} />
             <Route path="/contact" element={<ContactPage />} />
             {/* Route for User Dashboard */}
             <Route path="/userdashboard" element={<UserDashboard />} />
-
             {/* Protected User Routes */}
             <Route
               path="/user-dashboard"
@@ -59,7 +59,7 @@ const App = () => (
                 </RequireAuth>
               }
             />
-
+            <Route path="/pickup-summary" element={<PickupSummary />} />
             {/* Protected Scrapper Routes */}
             <Route
               path="/scrapper-dashboard"
@@ -77,7 +77,6 @@ const App = () => (
                 </RequireAuth>
               }
             />
-
             {/* 404 catch-all route */}
             <Route path="*" element={<NotFound />} />
           </Routes>
@@ -88,5 +87,3 @@ const App = () => (
 );
 
 export default App;
-
-
