@@ -60,6 +60,7 @@ const App = () => (
               }
             />
             <Route path="/pickup-summary" element={<PickupSummary />} />
+            <Route path="/profile" element={<ScrapperProfilePage />} />
             {/* Protected Scrapper Routes */}
             <Route
               path="/scrapper-dashboard"

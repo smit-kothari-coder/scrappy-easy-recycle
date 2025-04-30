@@ -1,108 +1,95 @@
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Truck, Clock, Settings, Leaf } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
-import { Button } from '@/components/ui/button';
-import { supabase } from '@/integrations/supabase/client';
-import React from 'react';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import PickupRequests from "@/components/PickupRequests";
+import UpdatePrices from "@/components/UpdatePrices";
+import ProfileTab from "@/components/ProfileTab";
 
 const ScrapperDashboard = () => {
-  const navigate = useNavigate(); // ✅ Move useNavigate here
+  const [tab, setTab] = useState("dashboard");
+  const navigate = useNavigate();
 
   const handleLogout = () => {
-    // Clear session or authentication tokens (adjust as needed)
-    sessionStorage.clear();  // or localStorage.clear();
-    
-    // Redirect the user to the home page
-    navigate('/'); // This redirects to the home page
-};
-  return (
-    <div className="p-6 min-h-screen bg-gradient-to-br from-white to-green-50">
-      {/* Header with Logout */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-green-800">Welcome, Scrapper!</h1>
+    sessionStorage.clear();
+    navigate("/");
+  };
 
-        {/* Logout Button */}
-        <Button 
-          onClick={handleLogout} 
-          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md"
+  return (
+    <Tabs value={tab} onValueChange={setTab} className="min-h-screen flex font-sans bg-gray-50">
+      {/* Sidebar */}
+      <aside className="w-64 bg-green-700 text-white flex flex-col justify-between p-6 shadow-lg">
+        <div>
+          <h1 className="text-3xl font-bold mb-10">ScrapEasy</h1>
+          <nav className="space-y-4">
+            <button
+              onClick={() => setTab("dashboard")}
+              className={`w-full text-left px-4 py-2 rounded ${tab === "dashboard" ? "bg-green-900" : "hover:bg-green-800"}`}
+            >
+              Dashboard
+            </button>
+            <button
+              onClick={() => setTab("requests")}
+              className={`w-full text-left px-4 py-2 rounded ${tab === "requests" ? "bg-green-900" : "hover:bg-green-800"}`}
+            >
+              Pickup Requests
+            </button>
+            <button
+              onClick={() => setTab("prices")}
+              className={`w-full text-left px-4 py-2 rounded ${tab === "prices" ? "bg-green-900" : "hover:bg-green-800"}`}
+            >
+              Update Prices
+            </button>
+            <button
+              onClick={() => setTab("profile")}
+              className={`w-full text-left px-4 py-2 rounded ${tab === "profile" ? "bg-green-900" : "hover:bg-green-800"}`}
+            >
+              Profile
+            </button>
+          </nav>
+        </div>
+        <Button
+          onClick={handleLogout}
+          className="w-full mt-10 bg-red-600 hover:bg-red-700 text-white"
         >
           Logout
         </Button>
-      </div>
+      </aside>
 
-      {/* Cards Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Vehicle Info */}
-        <Card className="shadow-xl rounded-2xl">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Truck className="w-5 h-5 text-green-600" /> Vehicle Info
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-gray-700">
-              Vehicle Type: <strong>Mini Truck</strong>
-            </p>
-            <p className="text-sm text-gray-700">
-              Registered No: <strong>GJ01AB1234</strong>
-            </p>
-          </CardContent>
-        </Card>
+      {/* Main Content */}
+      <main className="flex-1 p-10 overflow-y-auto space-y-8">
+        <h2 className="text-4xl font-bold text-green-800">Welcome, Scrapper!</h2>
 
-        {/* Working Hours */}
-        <Card className="shadow-xl rounded-2xl">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Clock className="w-5 h-5 text-green-600" /> Working Hours
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-gray-700">
-              Available: <strong>9:00 AM - 9:00 PM</strong>
-            </p>
-          </CardContent>
-        </Card>
+        {/* Tabs */}
+        <TabsContent value="dashboard">
+          <section className="bg-white p-6 rounded-xl shadow-md text-gray-700">
+            <h3 className="text-xl font-semibold text-green-700 mb-4">Dashboard Overview</h3>
+            <p>This is your dashboard overview. Add widgets here if needed.</p>
+          </section>
+        </TabsContent>
 
-        {/* Scrap Types */}
-        <Card className="shadow-xl rounded-2xl">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Leaf className="w-5 h-5 text-green-600" /> Scrap Types
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {['Plastic', 'Glass', 'Metal', 'E-Waste'].map(type => (
-                <Badge key={type} className="bg-green-100 text-green-800 border border-green-300">
-                  {type}
-                </Badge>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <TabsContent value="requests">
+          <section className="bg-white p-6 rounded-xl shadow-md">
+            <h3 className="text-xl font-semibold text-green-700 mb-4">Pickup Requests</h3>
+            <PickupRequests />
+          </section>
+        </TabsContent>
 
-        {/* Profile Settings */}
-        <Card className="shadow-xl rounded-2xl col-span-1 md:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Settings className="w-5 h-5 text-green-600" /> Profile Settings
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-gray-600 mb-2">
-              Manage your availability, scrap types, and update password from the profile section.
-            </p>
-            <Link 
-              to="/profile" 
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md shadow inline-block"
-            >
-              Go to Profile
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+        <TabsContent value="prices">
+          <section className="bg-white p-6 rounded-xl shadow-md">
+            <h3 className="text-xl font-semibold text-green-700 mb-4">Update Prices</h3>
+            <UpdatePrices />
+          </section>
+        </TabsContent>
+
+        <TabsContent value="profile">
+          <section className="bg-white p-6 rounded-xl shadow-md">
+            <h3 className="text-xl font-semibold text-green-700 mb-4">Profile Settings</h3>
+            <ProfileTab />
+          </section>
+        </TabsContent>
+      </main>
+    </Tabs>
   );
 };
 
