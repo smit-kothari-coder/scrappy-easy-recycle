@@ -5,8 +5,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { v4 as uuidv4 } from 'uuid';
 import type { Database } from '@/integrations/supabase/types';
 import { Pickup, Scrapper } from '@/types';
-// import { getLatLongFromAddress } from '@/components/SchedulePickup';
-
 
 type PickupRequestPayload = {
   user_id: string;
@@ -34,7 +32,7 @@ export const useSupabase = () => {
     const { data, error } = await supabase
       .from('users')
       .select('*')
-      .eq('email', userId)
+      .eq('id', userId)
       .single();
     if (error) throw new Error(`Profile fetch error: ${error.message}`);
     return data as Database['public']['Tables']['users']['Row'];
@@ -52,12 +50,8 @@ export const useSupabase = () => {
   }, []);
 
   // Pickup management
-  const createPickupRequest = useCallback(async (payload: PickupRequestPayload) => {
+  const createPickupRequest = useCallback(async (payload: PickupRequestPayload): Promise<Pickup> => {
     const pickupId = uuidv4();
-
-    // const { latitude, longitude } = await getLatLongFromAddress(payload.address);
-
-    console.log('Creating pickup request with type:', payload.type);
     const { data, error } = await supabase
       .from('pickups')
       .insert({
@@ -79,32 +73,26 @@ export const useSupabase = () => {
       })
       .select()
       .single() as { data: Pickup | null; error: any };
-
+  
     if (error) throw new Error(`Pickup creation error: ${error.message}`);
-    // Now we fetch scrappers based on the pincode of the pickup
-
+  
+    // Fetch scrappers based on pincode
     const pincodeNumber = parseInt(payload.pincode, 10);
     if (isNaN(pincodeNumber)) {
       throw new Error('Invalid pincode');
     }
-
+  
     const { data: scrappers, error: scrappersError } = await supabase
       .from('scrappers')
       .select('*')
       .eq('available', true)
-      .eq('pincode', pincodeNumber); // Match scrappers by pincode
-
+      .eq('pincode', pincodeNumber);
+  
     if (scrappersError) {
       console.error('Error fetching scrappers for pickup:', scrappersError);
+      throw new Error(`Scrappers fetch error: ${scrappersError.message}`);
     }
-
-    // If scrappers are found, send a notification or handle requests
-    if (scrappers && scrappers.length > 0) {
-      console.log('Found scrappers in the same area:', scrappers);
-      // Optional: Insert into a 'pickup_requests' table or send notification
-      // This is where you would notify or update scrappers with the new pickup request
-    }
-
+  
     return {
       ...data,
       date: payload.date,
@@ -112,6 +100,8 @@ export const useSupabase = () => {
       scrappers
     } as Pickup;
   }, []);
+  
+
   const updatePickupStatus = useCallback(async (pickupId: string, status: string) => {
     const { data, error } = await supabase
       .from('pickups')
@@ -124,50 +114,41 @@ export const useSupabase = () => {
     return data;
   }, []);
 
-  const getPickupRequests = useCallback(async (scrapperPincode: string) => {
+  // New Methods for Pickup History and Real-Time Updates
+
+  const getPickupHistory = useCallback(async (userId: string) => {
     const { data, error } = await supabase
       .from('pickups')
       .select('*')
-      .is('user_id', null)
-      .eq('status', 'Requested')
-     .eq('pincode', scrapperPincode); // 👈 Only pickups in same pincode
+      .eq('user_id', userId)
+      .order('date', { ascending: false });
 
-    if (error) throw new Error(`Pickup requests error: ${error.message}`);
+    if (error) throw new Error(`Error fetching pickup history: ${error.message}`);
     return data;
   }, []);
 
-  const acceptPickup = useCallback(async (pickupId: string, scrapperId: string) => {
-    const { data, error } = await supabase
-      .from('pickups')
-      .update({
-        scrapper_id: scrapperId,
-        status: 'Scheduled',
+  const listenToPickupUpdates = useCallback((userId: string, callback: (data: Pickup) => void) => {
+    const channel = supabase
+      .channel(`pickups:user_id=eq.${userId}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'pickups', filter: `user_id=eq.${userId}` }, payload => {
+        console.log('New pickup added:', payload.new);
+        callback(payload.new as Pickup);
       })
-      .eq('id', pickupId)
-      .select(`
-        id,
-        user_id,
-        users:user_id (name, phone)
-      `)
-      .single();
-    if (error) throw new Error(`Accept pickup error: ${error.message}`);
-    if (!data || !data.users || !Array.isArray(data.users) || data.users.length === 0) {
-      throw new Error('Invalid data structure: users field is missing or empty');
-    }
-    return {
-      ...data,
-      users: data.users[0],
-    } as Pickup & { users: { name: string; phone: string } };
-  }, []);
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'pickups', filter: `user_id=eq.${userId}` }, payload => {
+        console.log('Pickup updated:', payload.new);
+        callback(payload.new as Pickup);
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'pickups', filter: `user_id=eq.${userId}` }, payload => {
+        console.log('Pickup deleted:', payload.old);
+        callback(payload.old as Pickup);
+      })
+      .subscribe();
 
-  const rejectPickup = useCallback(async (pickupId: string) => {
-    const { error } = await supabase
-      .from('pickups')
-      .update({ status: 'Rejected' })
-      .eq('id', pickupId);
-    if (error) throw new Error(`Reject pickup error: ${error.message}`);
-    return true;
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
+  
 
   // Scrapper management
   const updateScrapper = useCallback(async (id: string, updates: Partial<Scrapper> & { availability_hours?: string; scrap_types?: string[] }) => {
@@ -183,6 +164,28 @@ export const useSupabase = () => {
       .single();
     if (error) throw new Error(`Scrapper update error: ${error.message}`);
     return data as Scrapper;
+  }, []);
+
+  const acceptPickup = useCallback(async (pickupId: string, scrapperId: string) => {
+    const { data, error } = await supabase
+      .from('pickups')
+      .update({ status: 'Accepted', scrapper_id: scrapperId })
+      .eq('id', pickupId)
+      .select()
+      .single();
+    if (error) throw new Error(`Accept pickup error: ${error.message}`);
+    return data;
+  }, []);
+
+  const rejectPickup = useCallback(async (pickupId: string) => {
+    const { data, error } = await supabase
+      .from('pickups')
+      .update({ status: 'Rejected' })
+      .eq('id', pickupId)
+      .select()
+      .single();
+    if (error) throw new Error(`Reject pickup error: ${error.message}`);
+    return data;
   }, []);
 
   const updateScrapperLocation = useCallback(async (id: string, lat: number, lng: number) => {
@@ -230,7 +233,13 @@ export const useSupabase = () => {
     getProfile,
     updateProfile,
     createPickupRequest,
-    getPickupRequests,
+    getPickupRequests: async () => {
+      const { data, error } = await supabase
+      .from('pickups')
+      .select('*');
+      if (error) throw new Error(`Error fetching pickup requests: ${error.message}`);
+      return data as Pickup[];
+    },
     acceptPickup,
     rejectPickup,
     updateScrapper,
@@ -238,5 +247,7 @@ export const useSupabase = () => {
     getActivePickup,
     getActiveScrappers,
     logout,
+    getPickupHistory, // Added method
+    listenToPickupUpdates, // Added method
   };
 };

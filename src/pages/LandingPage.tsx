@@ -84,12 +84,7 @@ const LandingPage = () => {
             </Link>
             <Link to="/signup">
               <Button className="scrap-btn-primary flex items-center gap-2 text-lg py-5 px-8 shadow-md w-full sm:w-auto">
-                <User size={22} /> Sign Up as User
-              </Button>
-            </Link>
-            <Link to="/signup?type=scrapper">
-              <Button className="scrap-btn-secondary flex items-center gap-2 text-lg py-5 px-8 shadow-md w-full sm:w-auto">
-                <Recycle size={22} /> Sign Up as Scrapper
+                <User size={22} /> Sign Up
               </Button>
             </Link>
           </div>

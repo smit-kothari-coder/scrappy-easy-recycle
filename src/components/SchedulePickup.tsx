@@ -42,34 +42,13 @@ const timeSlotMap = {
   "Evening (4PM - 7PM)": { start: "16:00:00", end: "19:00:00" },
 };
 
-export const getLatLongFromAddress = async () => {
-  let latitude = 0;
-  let longitude = 0;
-
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      async function (position) {
-        const latitude = position.coords.latitude;
-        const longitude = position.coords.longitude;
-        console.log("Latitude: " + latitude + ", Longitude: " + longitude);
-      },
-      async function (error) {
-        console.error("Error getting location:", error);
-      }
-    );
-  } else {
-    console.log("Geolocation is not supported by this browser.");
-  }
-  return { latitude, longitude };
-};
-
 const SchedulePickup = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { createPickupRequest } = useSupabase();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showScrapperSearch, setShowScrapperSearch] = useState(false);
-  const [pincode, setPincode] = useState<string>(''); // Independent pincode for scrapper search
+  const [pincode, setPincode] = useState<string>('');
 
   const form = useForm<PickupFormValues>({
     resolver: zodResolver(pickupSchema),
@@ -86,7 +65,6 @@ const SchedulePickup = () => {
   const currentPincode = form.watch('pincode');
 
   useEffect(() => {
-    // Trigger the scrapper search as soon as the pincode is entered
     if (pincode && pincode.length === 6) {
       setShowScrapperSearch(true);
     } else {
@@ -217,7 +195,13 @@ const SchedulePickup = () => {
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
+                    <PopoverContent
+                      className={cn(
+                        "w-auto p-0 opacity-90 transition-opacity duration-200 ease-in-out z-50",
+                        field.value && "opacity-100"
+                      )}
+                      align="start"
+                    >
                       <Calendar
                         mode="single"
                         selected={field.value}
@@ -240,7 +224,7 @@ const SchedulePickup = () => {
                   <FormLabel className="font-medium">Preferred Time</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <SelectTrigger className="bg-gray-50 border-gray-200">
+                      <SelectTrigger className="bg-gray-50 border-gray-200 opacity-90 transition-opacity duration-200 ease-in-out">
                         <SelectValue placeholder="Select time slot" />
                       </SelectTrigger>
                     </FormControl>
@@ -286,35 +270,24 @@ const SchedulePickup = () => {
       </section>
 
       <section className="mt-8 pt-6 border-t border-gray-200">
-        {/* Independent Pincode Input for Scrapper Search */}
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">Find Nearby Scrappers</h3>
         </div>
 
-        {/* Pincode input field for independent search */}
-        <div className="mb-4">
-          <Input
-            value={pincode}
-            onChange={(e) => setPincode(e.target.value)}
-            placeholder="Enter pincode to find scrapper"
-            maxLength={6}
-            className="bg-gray-50 border-gray-200"
-          />
-        </div>
-
-        {/* Scrapper search results will be shown automatically when pincode is entered */}
-        {showScrapperSearch && (
-          <ScrapperSearch
-            selectedPincode={pincode}  // Use independent pincode
-            onSelectScrapper={(scrapper) => {
-              toast.success(`Scrapper ${scrapper.name} assigned!`);
-              setShowScrapperSearch(false);  // Hide search results once a scrapper is selected
-            }}
-          />
-        )}
+        <ScrapperSearch
+          selectedPincode={pincode}  
+          onSelectScrapper={(scrapper) => {
+            toast.success(`Scrapper ${scrapper.name} assigned!`);
+            setShowScrapperSearch(false);
+          }}
+        />
       </section>
     </div>
   );
 };
 
 export default SchedulePickup;
+function getLatLongFromAddress(): { latitude: any; longitude: any; } | PromiseLike<{ latitude: any; longitude: any; }> {
+  throw new Error('Function not implemented.');
+}
+
