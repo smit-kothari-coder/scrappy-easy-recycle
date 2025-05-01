@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import Select from "react-select";
 
+// Scrap type options
 const scrapTypeOptions = [
   { label: "Paper", value: "paper" },
   { label: "Plastic", value: "plastic" },
@@ -17,35 +18,64 @@ const scrapTypeOptions = [
   { label: "Other", value: "other" },
 ];
 
+// Define the profile type
+type ScrapperProfile = {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  vehicle_type?: string;
+  registration_number?: string;
+  availability_hours?: string;
+  scrap_types: string | { label: string; value: string }[] | null;
+};
+
 const ProfileTab = () => {
   const { user } = useAuth();
   const { getScrapper, updateScrapper } = useSupabase();
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<ScrapperProfile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const data = await getScrapper(user.email);
+        const scrapperData = await getScrapper(user.email);
+        const data: ScrapperProfile = {
+          ...scrapperData,
+          scrap_types: Array.isArray(scrapperData.scrap_types)
+            ? scrapperData.scrap_types.map((type: string) => {
+                return (
+                  scrapTypeOptions.find((opt) => opt.value === type) || {
+                    label: type,
+                    value: type,
+                  }
+                );
+              })
+            : scrapperData.scrap_types,
+        };
+
         setProfile(data);
       } catch (error) {
         toast.error("Error fetching profile");
       }
     };
+
     fetchProfile();
   }, [user]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setProfile({ ...profile, [e.target.name]: e.target.value });
+    setProfile({ ...profile!, [e.target.name]: e.target.value });
   };
 
   const handleSave = async () => {
     try {
       const updatedProfile = {
         ...profile,
-        scrap_types: profile.scrap_types.map((type: any) => type.value),
+        scrap_types: (profile?.scrap_types as { label: string; value: string }[]).map(
+          (type) => type.value
+        ),
       };
-      await updateScrapper(profile.id, updatedProfile);
+      await updateScrapper(profile!.id, updatedProfile);
       toast.success("Profile updated successfully");
       setIsEditing(false);
     } catch (error) {
@@ -67,6 +97,7 @@ const ProfileTab = () => {
           className="w-full p-2 border border-gray-300 rounded"
         />
       </div>
+
       <div>
         <label className="block font-medium">Email</label>
         <input
@@ -76,6 +107,7 @@ const ProfileTab = () => {
           className="w-full p-2 border border-gray-300 rounded bg-gray-100"
         />
       </div>
+
       <div>
         <label className="block font-medium">Phone</label>
         <input
@@ -86,6 +118,7 @@ const ProfileTab = () => {
           className="w-full p-2 border border-gray-300 rounded"
         />
       </div>
+
       <div>
         <label className="block font-medium">Vehicle Type</label>
         <input
@@ -96,6 +129,18 @@ const ProfileTab = () => {
           className="w-full p-2 border border-gray-300 rounded"
         />
       </div>
+
+      <div>
+        <label className="block font-medium">Registration Number</label>
+        <input
+          name="registration_number"
+          value={profile.registration_number || ""}
+          onChange={handleChange}
+          disabled={!isEditing}
+          className="w-full p-2 border border-gray-300 rounded"
+        />
+      </div>
+
       <div>
         <label className="block font-medium">Availability Hours</label>
         <input
@@ -106,6 +151,7 @@ const ProfileTab = () => {
           className="w-full p-2 border border-gray-300 rounded"
         />
       </div>
+
       <div>
         <label className="block font-medium">Scrap Types</label>
         <Select
@@ -113,19 +159,9 @@ const ProfileTab = () => {
           isDisabled={!isEditing}
           name="scrap_types"
           options={scrapTypeOptions}
-          value={(typeof profile.scrap_types === "string"
-            ? profile.scrap_types.split(",").map((type: string) => {
-                const trimmed = type.trim();
-                return (
-                  scrapTypeOptions.find((opt) => opt.value === trimmed) || {
-                    label: trimmed,
-                    value: trimmed,
-                  }
-                );
-              })
-            : profile.scrap_types) || []}
+          value={profile.scrap_types as { label: string; value: string }[]}
           onChange={(selected) =>
-            setProfile({ ...profile, scrap_types: selected })
+            setProfile({ ...profile!, scrap_types: selected as { label: string; value: string }[] })
           }
         />
       </div>
@@ -154,4 +190,3 @@ const ProfileTab = () => {
 };
 
 export default ProfileTab;
-

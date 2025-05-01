@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useState, useEffect } from "react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -7,74 +7,108 @@ import { useSupabase } from "@/hooks/useSupabase";
 import { toast } from "sonner";
 
 const UpdatePrices = () => {
-  const { user } = useAuth(); // Get current user from authentication hook
-  const { getScrapper } = useSupabase(); // Get scrapper details from Supabase
-  const [scrapTypes, setScrapTypes] = useState<string[]>([]); // State to store scrap types
-  const [prices, setPrices] = useState<{ [key: string]: string }>({}); // State to store prices
+  const { user } = useAuth();
+  const { getScrapper, updateScrapper } = useSupabase();
 
-  // Fetch scrap types from the scrapper profile on component mount
+  const [scrapTypes, setScrapTypes] = useState<string[]>([]);  // State for scrap types
+  const [prices, setPrices] = useState<{ [key: string]: string }>({}); // State for prices
+  const [previousPrices, setPreviousPrices] = useState<{ [key: string]: string }>({}); // State for previous prices
+
+  // Use effect to fetch scrap types and prices when component mounts
   useEffect(() => {
     const fetchScrapTypes = async () => {
       if (user) {
         try {
           const scrapperData = await getScrapper(user.email!);
-          // Ensure scrap_types is an array (even if it's a string in the database)
+
+          // Ensure scrap_types is always an array (split string if necessary)
           const types = Array.isArray(scrapperData.scrap_types)
             ? scrapperData.scrap_types
-            : scrapperData.scrap_types.split(","); // If it's a comma-separated string
+            : (scrapperData.scrap_types as string)?.split(",") || [];
+
           setScrapTypes(types);
-          // Initialize the prices state based on the fetched scrap types
+
+          // Initialize prices with existing data or empty strings
           const initialPrices = types.reduce((acc, type) => {
-            acc[type] = ""; // Initialize empty string for each scrap type
+            acc[type] = scrapperData.scrap_prices?.[type] !== undefined ? String(scrapperData.scrap_prices[type]) : "";  // Convert to string or default to empty string
             return acc;
           }, {} as { [key: string]: string });
-          setPrices(initialPrices);
+
+          // Initialize previousPrices with existing prices
+          setPreviousPrices(initialPrices);
+
+          // Only update prices if they are not already set (to prevent resetting on every render)
+          if (Object.keys(prices).length === 0) {
+            setPrices(initialPrices); // Set the initial prices in state only if prices is empty
+          }
         } catch (error) {
           console.error("Error fetching scrapper data:", error);
-          toast.error("Failed to load scrap types. Please try again.");
+          toast.error("Failed to load scrap types and prices. Please try again.");
         }
       }
     };
 
     fetchScrapTypes();
-  }, [user, getScrapper]);
+  }, [user, getScrapper, prices]); // Include 'prices' in dependencies to prevent resetting
 
-  // Handle price change for each scrap type
-  const handleChange = (type: string, value: string) => {
-    setPrices((prev) => ({ ...prev, [type]: value }));
+  // Handle change in price for each scrap type
+  const handlePriceChange = (type: string, value: string) => {
+    setPrices((prevPrices) => ({
+      ...prevPrices,
+      [type]: value, // Update the price for the specific scrap type
+    }));
   };
 
-  // Handle form submission to save updated prices
+  // Submit updated prices to the backend
   const handleSubmit = async () => {
     if (Object.keys(prices).length === 0) {
       toast.error("No scrap types available to update.");
       return;
     }
+  
     try {
-      console.log("Updated Prices:", prices);
-      // Here, you can call your backend API or Supabase function to save the updated prices
+      // Log the data being submitted for debugging
+      const updatedPrices = Object.fromEntries(
+        Object.entries(prices).map(([key, value]) => [key, parseFloat(value) || 0])
+      );
+  
+      console.log("Updated Prices:", updatedPrices); // Log prices to check the format
+  
+      const { error } = await updateScrapper(user.email!, { scrap_prices: updatedPrices });
+  
+      if (error) {
+        console.error("Error updating prices:", error); // Log any error details for debugging
+        throw error;
+      }
+  
       toast.success("Prices updated successfully!");
     } catch (error) {
       console.error("Error updating prices:", error);
       toast.error("Failed to update prices. Please try again.");
     }
   };
+  
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Update Scrap Prices</CardTitle>
+        <CardTitle>Update Scrap Prices
+          <p className="text-sm text-gray-500"><strong>Update the prices for each scrap type.</strong></p>
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Render input fields dynamically based on the user's scrap types */}
         {scrapTypes.length > 0 ? (
           scrapTypes.map((type) => (
             <div key={type} className="flex items-center gap-4">
               <p className="w-24 font-medium">{type}</p>
+              {/* Display Previous Price */}
+              <p className="w-24 text-gray-500">{previousPrices[type] || "N/A"}</p>  {/* Previous Price */}
+              {/* Input for New Price */}
               <Input
                 placeholder="Enter price per kg"
-                value={prices[type] || ""}
-                onChange={(e) => handleChange(type, e.target.value)}
+                type="number"
+                value={prices[type] || ""}  // Bind value to prices
+                onChange={(e) => handlePriceChange(type, e.target.value)}  // Update price on change
                 className="w-48"
               />
             </div>

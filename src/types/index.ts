@@ -54,9 +54,13 @@ export type Scrapper = {
   rating: number;
   created_at: string;
   scrap_types: string[];     // Changed to always be array
-  total_pickups?: number;    // Added
   average_rating?: number;   // Added
   profile_image?: string;    // Added
+  registration_number: string | null; // Add vehicle_number field
+  scrap_prices?: { [key: string]: number
+   }; // Added scrap_prices property
+
+
 };
 
 export type Pickup = {

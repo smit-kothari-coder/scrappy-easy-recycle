@@ -1,4 +1,3 @@
-
 import { useState, useEffect, createContext, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -25,24 +24,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('Auth state change:', event, session);
         setSession(session);
         setUser(session?.user ?? null);
-        
-        // Determine user type after a short delay to avoid potential deadlocks
+
         if (session?.user) {
           setTimeout(async () => {
             try {
-              // Check if user is a scrapper
               const { data: scrapper } = await supabase
                 .from('scrappers')
                 .select('id')
                 .eq('email', session.user.email)
                 .single();
-                
+
               if (scrapper) {
                 setUserType('scrapper');
               } else {
@@ -50,7 +45,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               }
             } catch (error) {
               console.error('Error determining user type:', error);
-              setUserType('user'); // Default to user if error
+              setUserType('user');
             }
           }, 0);
         } else {
@@ -59,23 +54,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     );
 
-    // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
-      
-      // Determine user type
+
       if (session?.user) {
         setTimeout(async () => {
           try {
-            // Check if user is a scrapper
             const { data: scrapper } = await supabase
               .from('scrappers')
               .select('id')
               .eq('email', session.user.email)
               .single();
-              
+
             if (scrapper) {
               setUserType('scrapper');
             } else {
@@ -83,7 +75,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
           } catch (error) {
             console.error('Error determining user type:', error);
-            setUserType('user'); // Default to user if error
+            setUserType('user');
           }
         }, 0);
       }
@@ -95,68 +87,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const signUp = async (
-    email: string, 
-    password: string, 
-    userData: any, 
+    email: string,
+    password: string,
+    userData: any,
     isScrapperSignUp: boolean
   ) => {
     try {
       setLoading(true);
-      
-      // Sign up with Supabase Auth
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
       });
 
       if (error) throw error;
-      
-      if (!data.user) {
-        throw new Error('User was not created');
-      }
-      
-      // Insert user data into the appropriate table
+      if (!data.user) throw new Error('User was not created');
+
       if (isScrapperSignUp) {
-        let aadharUrl = null;
-        let panUrl = null;
-      
-        if (userData.aadharImage && userData.panImage) {
-          const userId = data.user.id;
-      
-          // Upload Aadhar
-          const { data: aadharUpload, error: aadharError } = await supabase.storage
-            .from('kyc-docs')
-            .upload(`aadhar/${userId}.jpg`, userData.aadharImage, {
-              cacheControl: '3600',
-              upsert: true,
-            });
-      
-          if (aadharError) throw aadharError;
-      
-          const { data: aadharPublic } = supabase
-            .storage
-            .from('kyc-docs')
-            .getPublicUrl(aadharUpload.path);
-          aadharUrl = aadharPublic.publicUrl;
-      
-          // Upload PAN
-          const { data: panUpload, error: panError } = await supabase.storage
-            .from('kyc-docs')
-            .upload(`pan/${userId}.jpg`, userData.panImage, {
-              cacheControl: '3600',
-              upsert: true,
-            });
-      
-          if (panError) throw panError;
-      
-          const { data: panPublic } = supabase
-            .storage
-            .from('kyc-docs')
-            .getPublicUrl(panUpload.path);
-          panUrl = panPublic.publicUrl;
-        }
-      
-        // Insert scrapper data WITHOUT latitude and longitude
         const { error: insertError } = await supabase
           .from('scrappers')
           .insert({
@@ -165,23 +112,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             email: userData.email,
             phone: userData.phone,
             city: userData.city,
+            pincode: userData.pincode,
             vehicle_type: userData.vehicleType,
+            registration_number: userData.registrationNumber,
             availability_hours: userData.workingHours,
+            service_area: userData.serviceArea,
+            scrap_types: userData.scrapTypes,
             available: true,
-            rating: 0,
-            aadhar_url: aadharUrl,
-            pan_url: panUrl,
-            aadhar_number: userData.aadharNumber,
-            pan_number: userData.panNumber
+            rating: 0
           });
-      
+
         if (insertError) throw insertError;
-      
+
         setUserType('scrapper');
-        toast.success('Scrapper account created with KYC!');
+        toast.success('Scrapper account created!');
         navigate('/scrapper-dashboard');
       }
-      
+
     } catch (error: any) {
       console.error('Error signing up:', error);
       toast.error(error.message || 'Error signing up');
@@ -193,23 +140,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true);
-      
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) throw error;
-      
-      // Check if the user is a scrapper or a regular user
+
       try {
-        // Check if user is a scrapper
         const { data: scrapper } = await supabase
           .from('scrappers')
           .select('id')
           .eq('email', email)
           .single();
-          
+
         if (scrapper) {
           setUserType('scrapper');
           navigate('/scrapper-dashboard');
@@ -221,7 +166,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       } catch (error) {
         console.error('Error determining user type:', error);
-        // Default to user dashboard
         setUserType('user');
         navigate('/user-dashboard');
         toast.success('Signed in successfully');

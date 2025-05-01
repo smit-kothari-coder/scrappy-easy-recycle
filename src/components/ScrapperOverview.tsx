@@ -7,8 +7,6 @@ import { supabase as importedSupabase } from "@/integrations/supabase/client";
 
 const supabase = importedSupabase;
 
-
-
 type ScrapperOverviewProps = {
   user: any;
 };
@@ -24,7 +22,9 @@ const ScrapperOverview: React.FC<ScrapperOverviewProps> = ({ user }) => {
       try {
         const { data, error } = await supabase
           .from("scrappers")
-          .select("vehicle_type, availability_hours, scrap_types")
+          .select(
+            "vehicle_type, availability_hours, scrap_types,registration_number"
+          )
           .eq("email", user.email)
           .single();
 
@@ -39,6 +39,8 @@ const ScrapperOverview: React.FC<ScrapperOverviewProps> = ({ user }) => {
         setProfile({
           vehicleType: data.vehicle_type || "Not set",
           hours: data.availability_hours || "Not set",
+          registrationNumber: data.registration_number || "Not set", // Handle registration_number
+
           scrapTypes,
         });
       } catch (error) {
@@ -56,7 +58,12 @@ const ScrapperOverview: React.FC<ScrapperOverviewProps> = ({ user }) => {
   return (
     <TabsContent value="dashboard">
       <section className="bg-white p-6 rounded-xl shadow-md text-gray-700">
-        <h3 className="text-xl font-semibold text-green-700 mb-6">Dashboard Overview</h3>
+        <h2 className="text-xl font-semibold text-green-700 mb-6">
+          <strong>Dashboard Overview</strong>
+        </h2>
+        <h4 className="text-xl font-semibold text-green-700 mb-6">
+          Update the profile if not shon in dashboard section{" "}
+        </h4>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
           {/* Vehicle Info */}
@@ -67,8 +74,13 @@ const ScrapperOverview: React.FC<ScrapperOverviewProps> = ({ user }) => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm">Vehicle Type: <strong>{profile.vehicleType}</strong></p>
-              <p className="text-sm">Reg. No: <strong>GJ01AB1234</strong></p> {/* Placeholder */}
+              <p className="text-sm">
+                Vehicle Type: <strong>{profile.vehicleType}</strong>
+              </p>
+              <p className="text-sm">
+                Reg. No: <strong>{profile.registrationNumber}</strong>
+              </p>{" "}
+              {/* Placeholder */}
             </CardContent>
           </Card>
 
@@ -80,7 +92,9 @@ const ScrapperOverview: React.FC<ScrapperOverviewProps> = ({ user }) => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm">Available: <strong>{profile.hours}</strong></p>
+              <p className="text-sm">
+                Available: <strong>{profile.hours}</strong>
+              </p>
             </CardContent>
           </Card>
 
@@ -95,7 +109,10 @@ const ScrapperOverview: React.FC<ScrapperOverviewProps> = ({ user }) => {
               <div className="flex flex-wrap gap-2">
                 {profile.scrapTypes.length > 0 ? (
                   profile.scrapTypes.map((type: string) => (
-                    <Badge key={type} className="bg-green-100 text-green-800 border">
+                    <Badge
+                      key={type}
+                      className="bg-green-100 text-green-800 border"
+                    >
                       {type}
                     </Badge>
                   ))
@@ -105,8 +122,6 @@ const ScrapperOverview: React.FC<ScrapperOverviewProps> = ({ user }) => {
               </div>
             </CardContent>
           </Card>
-
-          
         </div>
       </section>
     </TabsContent>
