@@ -19,22 +19,19 @@ import SolutionFormModal from "../components/SolutionFormModal";
 
 const reviews = [
   {
-    name: "Meera R.",
+    name: "Smit Kothari",
     rating: 5,
     text: "Super convenient to schedule waste pickups. The UI is clean and smooth!",
-    avatar: "https://randomuser.me/api/portraits/women/65.jpg",
   },
   {
-    name: "Karan S.",
+    name: "Saurav Kshirsagar",
     rating: 4,
     text: "Fast pickups and friendly staff. Highly recommended for busy folks.",
-    avatar: "https://randomuser.me/api/portraits/men/74.jpg",
   },
   {
-    name: "Pooja M.",
+    name: "Parin Jain",
     rating: 5,
-    text: "Love the rewards system! It's fun earning points for recycling.",
-    avatar: "https://randomuser.me/api/portraits/women/85.jpg",
+    text: "Recycling with ScrapEasy feels rewarding on its own – it’s great to be part of something impactful.",
   },
 ];
 
@@ -262,12 +259,12 @@ const LandingPage = () => {
               key={r.name}
               className="bg-white p-6 rounded-2xl shadow-md flex flex-col items-center w-full sm:w-1/3"
             >
-              <img
+              {/* <img
                 src={r.avatar}
                 alt={`Avatar of ${r.name}`}
                 className="h-14 w-14 rounded-full mb-4 border-2 border-scrap-green shadow"
                 loading="lazy"
-              />
+              /> */}
               <div className="mb-2">{getStars(r.rating)}</div>
               <p className="text-gray-700 italic text-center text-sm mb-2">
                 &quot;{r.text}&quot;
