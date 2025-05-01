@@ -5,15 +5,18 @@ import { Tabs, TabsContent } from "@/components/ui/tabs";
 import PickupRequests from "@/components/PickupRequests";
 import UpdatePrices from "@/components/UpdatePrices";
 import ProfileTab from "@/components/ProfileTab";
+import ScrapperOverview from "@/components/ScrapperOverview"; // ✅ Import overview component
+import { useAuth } from "@/hooks/useAuth";
 
 const ScrapperDashboard = () => {
   const [tab, setTab] = useState("dashboard");
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
 
-  const handleLogout = () => {
-    sessionStorage.clear();
-    navigate("/");
+  const handleLogout = async () => {
+    await signOut(); // this is cleaner and uses Supabase
   };
+  
 
   return (
     <Tabs value={tab} onValueChange={setTab} className="min-h-screen flex font-sans bg-gray-50">
@@ -60,14 +63,12 @@ const ScrapperDashboard = () => {
       <main className="flex-1 p-10 overflow-y-auto space-y-8">
         <h2 className="text-4xl font-bold text-green-800">Welcome, Scrapper!</h2>
 
-        {/* Tabs */}
+        {/* Dashboard Overview */}
         <TabsContent value="dashboard">
-          <section className="bg-white p-6 rounded-xl shadow-md text-gray-700">
-            <h3 className="text-xl font-semibold text-green-700 mb-4">Dashboard Overview</h3>
-            <p>This is your dashboard overview. Add widgets here if needed.</p>
-          </section>
+          <ScrapperOverview user={user} />
         </TabsContent>
 
+        {/* Pickup Requests */}
         <TabsContent value="requests">
           <section className="bg-white p-6 rounded-xl shadow-md">
             <h3 className="text-xl font-semibold text-green-700 mb-4">Pickup Requests</h3>
@@ -75,6 +76,7 @@ const ScrapperDashboard = () => {
           </section>
         </TabsContent>
 
+        {/* Update Prices */}
         <TabsContent value="prices">
           <section className="bg-white p-6 rounded-xl shadow-md">
             <h3 className="text-xl font-semibold text-green-700 mb-4">Update Prices</h3>
@@ -82,6 +84,7 @@ const ScrapperDashboard = () => {
           </section>
         </TabsContent>
 
+        {/* Profile */}
         <TabsContent value="profile">
           <section className="bg-white p-6 rounded-xl shadow-md">
             <h3 className="text-xl font-semibold text-green-700 mb-4">Profile Settings</h3>
@@ -94,3 +97,5 @@ const ScrapperDashboard = () => {
 };
 
 export default ScrapperDashboard;
+
+
