@@ -120,7 +120,7 @@ const LandingPage = () => {
             Industries We Serve
           </p>
           <h2 className="text-4xl font-extrabold mb-8 text-gray-800">
-            Solutions by Industry
+            Customized Solutions for Industries
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
@@ -136,7 +136,7 @@ const LandingPage = () => {
               },
               {
                 label: "Schools & Colleges",
-                img: "/images/institue.jpg", // ✅ fixed typo
+                img: "/images/institue.jpg",
                 desc: "Organize student-led scrap collection drives and campus audits.",
               },
             ].map(({ label, img, desc }) => (
@@ -259,12 +259,6 @@ const LandingPage = () => {
               key={r.name}
               className="bg-white p-6 rounded-2xl shadow-md flex flex-col items-center w-full sm:w-1/3"
             >
-              {/* <img
-                src={r.avatar}
-                alt={`Avatar of ${r.name}`}
-                className="h-14 w-14 rounded-full mb-4 border-2 border-scrap-green shadow"
-                loading="lazy"
-              /> */}
               <div className="mb-2">{getStars(r.rating)}</div>
               <p className="text-gray-700 italic text-center text-sm mb-2">
                 &quot;{r.text}&quot;

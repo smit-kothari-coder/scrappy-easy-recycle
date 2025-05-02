@@ -9,7 +9,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   signUp: (email: string, password: string, userData: any, isScrapperSignUp: boolean) => Promise<void>;
-  signIn: (email: string, password: string) => Promise<void>;
+  signIn: (emailOrPhone: string, passwordOrOtp: string, isPhoneLogin: boolean) => Promise<void>;
   signOut: () => Promise<void>;
   userType: 'user' | 'scrapper' | null;
 }
@@ -137,38 +137,50 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (emailOrPhone: string, passwordOrOtp: string, isPhoneLogin: boolean) => {
     try {
       setLoading(true);
 
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      if (isPhoneLogin) {
+        // Handle phone login (OTP)
+        const { data, error } = await supabase.auth.signInWithOtp({
+          phone: emailOrPhone,
+        });
 
-      if (error) throw error;
+        if (error) throw error;
+        toast.success('OTP sent successfully');
+        return;
+      } else {
+        // Handle email login (password)
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: emailOrPhone,
+          password: passwordOrOtp,
+        });
 
-      try {
-        const { data: scrapper } = await supabase
-          .from('scrappers')
-          .select('id')
-          .eq('email', email)
-          .single();
+        if (error) throw error;
 
-        if (scrapper) {
-          setUserType('scrapper');
-          navigate('/scrapper-dashboard');
-          toast.success('Signed in as scrapper');
-        } else {
+        try {
+          const { data: scrapper } = await supabase
+            .from('scrappers')
+            .select('id')
+            .eq('email', emailOrPhone)
+            .single();
+
+          if (scrapper) {
+            setUserType('scrapper');
+            navigate('/scrapper-dashboard');
+            toast.success('Signed in as scrapper');
+          } else {
+            setUserType('user');
+            navigate('/user-dashboard');
+            toast.success('Signed in successfully');
+          }
+        } catch (error) {
+          console.error('Error determining user type:', error);
           setUserType('user');
           navigate('/user-dashboard');
           toast.success('Signed in successfully');
         }
-      } catch (error) {
-        console.error('Error determining user type:', error);
-        setUserType('user');
-        navigate('/user-dashboard');
-        toast.success('Signed in successfully');
       }
     } catch (error: any) {
       console.error('Error signing in:', error);

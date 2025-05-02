@@ -29,7 +29,7 @@ const SignInPage = () => {
   });
 
   const onSubmit = async (data: SignInFormValues) => {
-    await signIn(data.email, data.password);
+    await signIn(data.email, data.password, false); // Assuming 'false' for isPhoneLogin
   };
 
   return (

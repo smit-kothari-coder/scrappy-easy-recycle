@@ -2,9 +2,10 @@ import { useState } from "react";
 import { Dialog } from "@headlessui/react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { Database } from '@/types/supabase';
+import { Database } from "@/types/supabase";
 
-type CollectionRequestInsert = Database['public']['Tables']['collection_requests']['Insert'];
+type CollectionRequestInsert =
+  Database["public"]["Tables"]["collection_requests"]["Insert"];
 
 interface SolutionFormModalProps {
   isOpen: boolean;
@@ -40,14 +41,22 @@ type FormData = {
   institution_address?: string;
 };
 
-const SolutionFormModal = ({ isOpen, onClose, category }: SolutionFormModalProps) => {
+const SolutionFormModal = ({
+  isOpen,
+  onClose,
+  category,
+}: SolutionFormModalProps) => {
   const [formData, setFormData] = useState<FormData>({});
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setFormData(prev => ({
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
+    setFormData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
     }));
@@ -56,23 +65,33 @@ const SolutionFormModal = ({ isOpen, onClose, category }: SolutionFormModalProps
 
   const validateForm = (): string[] => {
     const errors: string[] = [];
-    
+
     if (category === "Residential Apartments") {
-      if (!formData.apartment_name?.trim()) errors.push("Apartment name is required");
-      if (!formData.contact_name?.trim()) errors.push("Contact name is required");
-      if (!formData.contact_number?.trim()) errors.push("Contact number is required");
+      if (!formData.apartment_name?.trim())
+        errors.push("Apartment name is required");
+      if (!formData.contact_name?.trim())
+        errors.push("Contact name is required");
+      if (!formData.contact_number?.trim())
+        errors.push("Contact number is required");
       if (!formData.address?.trim()) errors.push("Address is required");
-      if (!formData.preferred_collection_date) errors.push("Collection date is required");
+      if (!formData.preferred_collection_date)
+        errors.push("Collection date is required");
     } else if (category === "IT Companies/Bank Offices") {
-      if (!formData.company_name?.trim()) errors.push("Company name is required");
-      if (!formData.contact_info?.trim()) errors.push("Contact information is required");
-      if (!formData.office_address?.trim()) errors.push("Office address is required");
+      if (!formData.company_name?.trim())
+        errors.push("Company name is required");
+      if (!formData.contact_info?.trim())
+        errors.push("Contact information is required");
+      if (!formData.office_address?.trim())
+        errors.push("Office address is required");
     } else if (category === "Schools & Colleges") {
-      if (!formData.institution_name?.trim()) errors.push("Institution name is required");
-      if (!formData.institution_type) errors.push("Institution type is required");
-      if (!formData.contact?.trim()) errors.push("Contact information is required");
+      if (!formData.institution_name?.trim())
+        errors.push("Institution name is required");
+      if (!formData.institution_type)
+        errors.push("Institution type is required");
+      if (!formData.contact?.trim())
+        errors.push("Contact information is required");
     }
-    
+
     return errors;
   };
 
@@ -87,14 +106,48 @@ const SolutionFormModal = ({ isOpen, onClose, category }: SolutionFormModalProps
     }
 
     setLoading(true);
-    const insertData: CollectionRequestInsert = { 
+    const insertData: CollectionRequestInsert = {
       category,
+      apartment_name: "",
+      units: null,
+      preferred_collection_date: "",
+      scrap_types: "",
+      contact_name: "",
+      contact_number: "",
+      residential_address: "",
+      frequency: "",
+      // company_name is not part of the type definition
+      company_name: "",
+      department: "",
+      ewaste_types: "",
+      quantity: null,
+      preferred_pickup_date: "",
+      responsible_person: "",
+      contact_info: "",
+      office_address: "",
+      institution_name: "",
+      institution_type: "",
+      event_type: "",
+      target_group: "",
+      preferred_date: "",
+      coordinator: "",
+      contact: "",
+      institution_address: "",
       created_at: new Date().toISOString(),
-      status: 'pending'
+      status: "pending",
     };
 
     try {
       if (category === "Residential Apartments") {
+        if (
+          !formData.apartment_name ||
+          !formData.contact_name ||
+          !formData.contact_number ||
+          !formData.address ||
+          !formData.preferred_collection_date
+        ) {
+          throw new Error("Missing required fields for Residential Apartments");
+        }
         Object.assign(insertData, {
           apartment_name: formData.apartment_name,
           units: formData.units ? parseInt(formData.units) : null,
@@ -106,6 +159,15 @@ const SolutionFormModal = ({ isOpen, onClose, category }: SolutionFormModalProps
           frequency: formData.frequency,
         });
       } else if (category === "IT Companies/Bank Offices") {
+        if (
+          !formData.company_name ||
+          !formData.contact_info ||
+          !formData.office_address
+        ) {
+          throw new Error(
+            "Missing required fields for IT Companies/Bank Offices"
+          );
+        }
         Object.assign(insertData, {
           company_name: formData.company_name,
           department: formData.department,
@@ -117,6 +179,13 @@ const SolutionFormModal = ({ isOpen, onClose, category }: SolutionFormModalProps
           office_address: formData.office_address,
         });
       } else if (category === "Schools & Colleges") {
+        if (
+          !formData.institution_name ||
+          !formData.institution_type ||
+          !formData.contact
+        ) {
+          throw new Error("Missing required fields for Schools & Colleges");
+        }
         Object.assign(insertData, {
           institution_name: formData.institution_name,
           institution_type: formData.institution_type,
@@ -137,16 +206,26 @@ const SolutionFormModal = ({ isOpen, onClose, category }: SolutionFormModalProps
       setSubmitted(true);
       setErrors([]);
     } catch (error) {
-      console.error('Submission error:', error);
-      setErrors([`Error: ${error instanceof Error ? error.message : 'Failed to submit'}`]);
+      console.error("Submission error:", error);
+      setErrors([
+        `Error: ${error instanceof Error ? error.message : "Failed to submit"}`,
+      ]);
     } finally {
       setLoading(false);
     }
   };
 
-  const renderInput = (name: keyof FormData, type = "text", placeholder = "", required = false) => (
+  const renderInput = (
+    name: keyof FormData,
+    type = "text",
+    placeholder = "",
+    required = false
+  ) => (
     <div className="form-field">
-      <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">
+      <label
+        htmlFor={name}
+        className="block text-sm font-medium text-gray-700 mb-1"
+      >
         {placeholder} {required && <span className="text-red-500">*</span>}
       </label>
       <input
@@ -164,9 +243,16 @@ const SolutionFormModal = ({ isOpen, onClose, category }: SolutionFormModalProps
     </div>
   );
 
-  const renderTextarea = (name: keyof FormData, placeholder = "", required = false) => (
+  const renderTextarea = (
+    name: keyof FormData,
+    placeholder = "",
+    required = false
+  ) => (
     <div className="form-field">
-      <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">
+      <label
+        htmlFor={name}
+        className="block text-sm font-medium text-gray-700 mb-1"
+      >
         {placeholder} {required && <span className="text-red-500">*</span>}
       </label>
       <textarea
@@ -190,23 +276,38 @@ const SolutionFormModal = ({ isOpen, onClose, category }: SolutionFormModalProps
   if (category === "Residential Apartments") {
     formContent = (
       <div className="space-y-4">
-        <h2 id="modal-title" className="text-2xl font-bold text-center">Schedule a Residential Scrap Collection Drive</h2>
+        <h2 id="modal-title" className="text-2xl font-bold text-center">
+          Schedule a Residential Scrap Collection Drive
+        </h2>
         {renderInput("apartment_name", "text", "Apartment Name", true)}
         {renderInput("units", "number", "Number of Flats/Units")}
-        {renderInput("preferred_collection_date", "date", "Preferred Collection Date", true)}
-        {renderInput("scrap_types", "text", "Types of Scrap (Metal, Plastic, Paper, E-waste, etc.)", true)}
+        {renderInput(
+          "preferred_collection_date",
+          "date",
+          "Preferred Collection Date",
+          true
+        )}
+        {renderInput(
+          "scrap_types",
+          "text",
+          "Types of Scrap (Metal, Plastic, Paper, E-waste, etc.)",
+          true
+        )}
         {renderInput("contact_name", "text", "Point of Contact Name", true)}
         {renderInput("contact_number", "tel", "Contact Number", true)}
         {renderTextarea("address", "Location/Address", true)}
         <div className="form-field">
-          <label htmlFor="frequency" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="frequency"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             Collection Frequency
           </label>
-          <select 
+          <select
             id="frequency"
-            name="frequency" 
-            className="scrap-input w-full px-3 py-2 border border-gray-300 rounded-md" 
-            onChange={handleChange} 
+            name="frequency"
+            className="scrap-input w-full px-3 py-2 border border-gray-300 rounded-md"
+            onChange={handleChange}
             value={formData.frequency || ""}
           >
             <option value="">Select Frequency</option>
@@ -218,19 +319,49 @@ const SolutionFormModal = ({ isOpen, onClose, category }: SolutionFormModalProps
         </div>
       </div>
     );
+  } else if (category === "IT Companies/Bank Offices") {
+    formContent = (
+      <div className="space-y-4">
+        <h2 id="modal-title" className="text-2xl font-bold text-center">
+          Schedule a Bank/Company Scrap Collection Drive
+        </h2>
+        {renderInput("company_name", "text", "Company Name", true)}
+        {renderInput("contact_info", "text", "Contact Information", true)}
+        {renderInput("office_address", "text", "Office Address", true)}
+        {renderInput("ewaste_types", "text", "Types of E-waste", true)}
+        {renderInput("quantity", "number", "Quantity")}
+        {renderInput("preferred_pickup_date", "date", "Preferred Pickup Date")}
+        {renderInput("responsible_person", "text", "Responsible Person")}
+      </div>
+    );
+  } else if (category === "Schools & Colleges") {
+    formContent = (
+      <div className="space-y-4">
+        <h2 id="modal-title" className="text-2xl font-bold text-center">
+          Schedule a School/College Scrap Collection Drive
+        </h2>
+        {renderInput("institution_name", "text", "Institution Name", true)}
+        {renderInput("institution_type", "text", "Institution Type", true)}
+        {renderInput("event_type", "text", "Event Type")}
+        {renderInput("target_group", "text", "Target Group")}
+        {renderInput("preferred_date", "date", "Preferred Date")}
+        {renderInput("coordinator", "text", "Coordinator")}
+        {renderInput("contact", "text", "Contact Information", true)}
+        {renderInput("institution_address", "text", "Institution Address")}
+      </div>
+    );
   }
-  // ... (Other category forms remain similar but with updated styling and accessibility)
 
   return (
-    <Dialog 
-      open={isOpen} 
-      onClose={onClose} 
+    <Dialog
+      open={isOpen}
+      onClose={onClose}
       className="relative z-50"
       aria-labelledby="modal-title"
     >
       <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
       <div className="fixed inset-0 flex items-center justify-center p-4">
-        <Dialog.Panel 
+        <Dialog.Panel
           className="bg-white rounded-lg shadow-lg p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto"
           role="dialog"
           aria-modal="true"
@@ -245,7 +376,7 @@ const SolutionFormModal = ({ isOpen, onClose, category }: SolutionFormModalProps
                   ))}
                 </div>
               )}
-              <Button 
+              <Button
                 type="submit"
                 className="scrap-btn-primary w-full"
                 disabled={loading}
