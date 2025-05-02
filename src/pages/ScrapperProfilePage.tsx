@@ -31,7 +31,9 @@ const ScrapperProfilePage = () => {
         const scrapTypes = profileData.scrap_types
           ? Array.isArray(profileData.scrap_types)
             ? profileData.scrap_types
-            : profileData.scrap_types.split(",")
+            : typeof profileData.scrap_types === "string"
+            ? (profileData.scrap_types as string).split(",")
+            : []
           : [];
 
         setInitialData({
