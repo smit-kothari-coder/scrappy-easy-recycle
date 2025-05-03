@@ -5,50 +5,58 @@ import { Tabs, TabsContent } from "@/components/ui/tabs";
 import PickupRequests from "@/components/PickupRequests";
 import UpdatePrices from "@/components/UpdatePrices";
 import ProfileTab from "@/components/ProfileTab";
-import ScrapperOverview from "@/components/ScrapperOverview"; // ✅ Import overview component
+import ScrapperOverview from "@/components/ScrapperOverview";
 import { useAuth } from "@/hooks/useAuth";
+import { Menu } from "lucide-react"; // Hamburger icon
 
 const ScrapperDashboard = () => {
   const [tab, setTab] = useState("dashboard");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
 
   const handleLogout = async () => {
-    await signOut(); // this is cleaner and uses Supabase
+    await signOut();
   };
-  
 
   return (
-    <Tabs value={tab} onValueChange={setTab} className="min-h-screen flex font-sans bg-gray-50">
+    <div className="h-screen w-screen overflow-hidden flex font-sans relative">
+      {/* Hamburger button for mobile */}
+      <button
+        className="absolute top-4 left-4 z-50 md:hidden bg-white p-2 rounded shadow"
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+      >
+        <Menu className="w-6 h-6 text-green-700" />
+      </button>
+
       {/* Sidebar */}
-      <aside className="w-64 bg-green-700 text-white flex flex-col justify-between p-6 shadow-lg">
+      <aside
+        className={`fixed top-0 left-0 h-full w-64 bg-green-700 text-white flex flex-col justify-between p-6 shadow-lg transform transition-transform duration-300 z-40
+        ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 md:static md:flex`}
+      >
         <div>
           <h1 className="text-3xl font-bold mb-10">ScrapEasy</h1>
           <nav className="space-y-4">
-            <button
-              onClick={() => setTab("dashboard")}
-              className={`w-full text-left px-4 py-2 rounded ${tab === "dashboard" ? "bg-green-900" : "hover:bg-green-800"}`}
-            >
-              Dashboard
-            </button>
-            <button
-              onClick={() => setTab("requests")}
-              className={`w-full text-left px-4 py-2 rounded ${tab === "requests" ? "bg-green-900" : "hover:bg-green-800"}`}
-            >
-              Pickup Requests
-            </button>
-            <button
-              onClick={() => setTab("prices")}
-              className={`w-full text-left px-4 py-2 rounded ${tab === "prices" ? "bg-green-900" : "hover:bg-green-800"}`}
-            >
-              Update Prices
-            </button>
-            <button
-              onClick={() => setTab("profile")}
-              className={`w-full text-left px-4 py-2 rounded ${tab === "profile" ? "bg-green-900" : "hover:bg-green-800"}`}
-            >
-              Profile
-            </button>
+            {["dashboard", "requests", "prices", "profile"].map((item) => (
+              <button
+                key={item}
+                onClick={() => {
+                  setTab(item);
+                  setSidebarOpen(false); // Auto-close sidebar on selection
+                }}
+                className={`w-full text-left px-4 py-2 rounded ${
+                  tab === item ? "bg-green-900" : "hover:bg-green-800"
+                }`}
+              >
+                {item === "dashboard"
+                  ? "Dashboard"
+                  : item === "requests"
+                  ? "Pickup Requests"
+                  : item === "prices"
+                  ? "Update Prices"
+                  : "Profile"}
+              </button>
+            ))}
           </nav>
         </div>
         <Button
@@ -60,42 +68,41 @@ const ScrapperDashboard = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-10 overflow-y-auto space-y-8">
+      <main className="flex-1 h-full overflow-y-auto bg-gray-50 p-6 pt-16 md:pt-6 space-y-8">
         <h2 className="text-4xl font-bold text-green-800">Welcome, Scrapper!</h2>
 
-        {/* Dashboard Overview */}
-        <TabsContent value="dashboard">
-          <ScrapperOverview user={user} />
-        </TabsContent>
-
-        {/* Pickup Requests */}
-        <TabsContent value="requests">
-          <section className="bg-white p-6 rounded-xl shadow-md">
-            <h3 className="text-xl font-semibold text-green-700 mb-4">Pickup Requests</h3>
-            <PickupRequests />
-          </section>
-        </TabsContent>
-
-        {/* Update Prices */}
-        <TabsContent value="prices">
-          <section className="bg-white p-6 rounded-xl shadow-md">
-            <h3 className="text-xl font-semibold text-green-700 mb-4">Update Prices</h3>
-            <UpdatePrices />
-          </section>
-        </TabsContent>
-
-        {/* Profile */}
-        <TabsContent value="profile">
-          <section className="bg-white p-6 rounded-xl shadow-md">
-            <h3 className="text-xl font-semibold text-green-700 mb-4">Profile Settings</h3>
-            <ProfileTab />
-          </section>
-        </TabsContent>
+        <Tabs value={tab} onValueChange={setTab} className="w-full">
+          <TabsContent value="dashboard">
+            <ScrapperOverview user={user} />
+          </TabsContent>
+          <TabsContent value="requests">
+            <section className="bg-white p-6 rounded-xl shadow-md">
+              <h3 className="text-xl font-semibold text-green-700 mb-4">
+                Pickup Requests
+              </h3>
+              <PickupRequests />
+            </section>
+          </TabsContent>
+          <TabsContent value="prices">
+            <section className="bg-white p-6 rounded-xl shadow-md">
+              <h3 className="text-xl font-semibold text-green-700 mb-4">
+                Update Prices
+              </h3>
+              <UpdatePrices />
+            </section>
+          </TabsContent>
+          <TabsContent value="profile">
+            <section className="bg-white p-6 rounded-xl shadow-md">
+              <h3 className="text-xl font-semibold text-green-700 mb-4">
+                Profile Settings
+              </h3>
+              <ProfileTab />
+            </section>
+          </TabsContent>
+        </Tabs>
       </main>
-    </Tabs>
+    </div>
   );
 };
 
 export default ScrapperDashboard;
-
-

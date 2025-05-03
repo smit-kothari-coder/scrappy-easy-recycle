@@ -65,7 +65,7 @@ const ScrapperProfilePage = () => {
     const { password, scrapTypes, vehicleType, hours, ...profileData } = data;
 
     try {
-      const result = await updateScrapper(initialData.id, {
+      const result = await updateScrapper(initialData.email, {
         ...profileData,
         vehicle_type: vehicleType,
         availability_hours: hours,

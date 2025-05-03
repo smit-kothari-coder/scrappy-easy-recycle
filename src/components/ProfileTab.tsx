@@ -75,7 +75,7 @@ const ProfileTab = () => {
           (type) => type.value
         ),
       };
-      await updateScrapper(profile!.id, updatedProfile);
+      await updateScrapper(profile!.email, updatedProfile);
       toast.success("Profile updated successfully");
       setIsEditing(false);
     } catch (error) {
