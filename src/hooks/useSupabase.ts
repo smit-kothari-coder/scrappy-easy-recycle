@@ -70,6 +70,27 @@ export const useSupabase = () => {
     []
   );
 
+  const getPickupRequestsForScrapper = useCallback(
+    async (pincode: string) => {
+      try {
+        const { data, error } = await supabase
+          .from("pickups")
+          .select("*")
+          .eq("pincode", pincode)
+          .eq("status", "Requested")
+          .is("scrapper_id", null);
+  
+        if (error) throw new Error(`Error fetching pickups: ${error.message}`);
+        return data as Pickup[];
+      } catch (error) {
+        console.error("Error in getPickupRequestsForScrapper:", error);
+        return [];
+      }
+    },
+    []
+  );
+  
+
   const createPickupRequest = useCallback(
     async (payload: PickupRequestPayload): Promise<Pickup> => {
       const pickupId = uuidv4();
@@ -399,5 +420,7 @@ export const useSupabase = () => {
     listenToPickupUpdates,
     updateScrapperLocation,
     logout,
+    getPickupRequestsForScrapper,
+
   };
 };

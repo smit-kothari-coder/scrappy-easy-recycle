@@ -5,22 +5,9 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader, Star } from 'lucide-react';
 import { toast } from 'sonner';
-import { format } from "date-fns"; // if not already imported
 import { useNavigate } from "react-router-dom";
 
-
 // Type definitions
-interface PincodeResponse {
-  Status: string;
-  PostOffice?: Array<{
-    Name: string;
-    Latitude: string;
-    Longitude: string;
-    [key: string]: any;
-  }>;
-  [key: string]: any;
-}
-
 type Scrapper = {
   id: string;
   name: string;
@@ -28,7 +15,6 @@ type Scrapper = {
   rating: number;
   pincode: string;
   services: string[];
-  distance: number;
 };
 
 interface ScrapperSearchProps {
@@ -62,33 +48,11 @@ export const ScrapperSearch: React.FC<ScrapperSearchProps> = ({
       setLoading(true);
       setScrappers([]); // Clear previous results
 
-      const pincodeRes = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
-      if (!pincodeRes.ok) throw new Error('Failed to fetch pincode data');
-
-      const pincodeData: PincodeResponse[] = await pincodeRes.json();
-
-      if (!pincodeData[0] || pincodeData[0].Status !== 'Success') {
-        throw new Error('Invalid pincode');
-      }
-
-      const postOffice = pincodeData[0].PostOffice?.[0];
-      if (!postOffice?.Latitude || !postOffice?.Longitude) {
-        throw new Error('Location data not available for this pincode');
-      }
-
-      const latitude = parseFloat(postOffice.Latitude);
-      const longitude = parseFloat(postOffice.Longitude);
-
-      if (isNaN(latitude) || isNaN(longitude)) {
-        throw new Error('Invalid coordinates received');
-      }
-
-      // Fetch scrappers within a 10km radius using Supabase RPC function
-      const { data, error } = await supabase.rpc('scrappers' as any, {
-        lat: latitude,
-        lon: longitude,
-        radius: 10000, // 10km in meters
-      });
+      // Search scrappers from database based on the pincode
+      const { data, error } = await supabase
+        .from('scrappers')
+        .select('*')
+        .eq('pincode', pincode); // Query scrappers with the matching pincode
 
       if (error) throw error;
       if (!Array.isArray(data)) throw new Error('Invalid response format');
@@ -101,7 +65,6 @@ export const ScrapperSearch: React.FC<ScrapperSearchProps> = ({
           rating: Number(item.rating) || 0,
           pincode: item.pincode?.toString() || '',
           services: Array.isArray(item.services) ? item.services : [],
-          distance: (Number(item.distance) || 0) / 1000, // Convert meters to km
         }))
         .filter(
           (scrapper) =>
@@ -188,20 +151,12 @@ export const ScrapperSearch: React.FC<ScrapperSearchProps> = ({
                   </Badge>
                 ))}
               </div>
-
-              <p className="text-sm mt-3 font-medium text-scrap-green">
-                {scrapper.distance.toFixed(1)} km away
-              </p>
             </div>
           ))}
         </div>
       )}
 
-      {!loading && pincode.length === 6 && scrappers.length === 0 && (
-        <div className="text-center text-muted-foreground">
-          No scrappers found in this area. Try a different pincode.
-        </div>
-      )}
+
     </div>
   );
 };

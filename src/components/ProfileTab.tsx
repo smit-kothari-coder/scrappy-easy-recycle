@@ -24,9 +24,11 @@ type ScrapperProfile = {
   name: string;
   email: string;
   phone?: string;
+  address?: string;
   vehicle_type?: string;
   registration_number?: string;
   availability_hours?: string;
+  pincode?: string;
   scrap_types: string | { label: string; value: string }[] | null;
 };
 
@@ -42,6 +44,7 @@ const ProfileTab = () => {
         const scrapperData = await getScrapper(user.email);
         const data: ScrapperProfile = {
           ...scrapperData,
+          pincode: scrapperData.pincode?.toString(),
           scrap_types: Array.isArray(scrapperData.scrap_types)
             ? scrapperData.scrap_types.map((type: string) => {
                 return (
@@ -71,9 +74,10 @@ const ProfileTab = () => {
     try {
       const updatedProfile = {
         ...profile,
-        scrap_types: (profile?.scrap_types as { label: string; value: string }[]).map(
-          (type) => type.value
-        ),
+        scrap_types: (
+          profile?.scrap_types as { label: string; value: string }[]
+        ).map((type) => type.value),
+        pincode: profile?.pincode ? parseInt(profile.pincode, 10) : undefined,
       };
       await updateScrapper(profile!.email, updatedProfile);
       toast.success("Profile updated successfully");
@@ -88,7 +92,7 @@ const ProfileTab = () => {
   return (
     <div className="space-y-4">
       <div>
-        <label className="block font-medium">Name</label>
+        <label className="block font-medium">Full Name</label>
         <input
           name="name"
           value={profile.name || ""}
@@ -113,6 +117,28 @@ const ProfileTab = () => {
         <input
           name="phone"
           value={profile.phone || ""}
+          onChange={handleChange}
+          disabled={!isEditing}
+          className="w-full p-2 border border-gray-300 rounded"
+        />
+      </div>
+
+      <div>
+        <label className="block font-medium">Address</label>
+        <input
+          name="address"
+          value={profile.address || ""}
+          onChange={handleChange}
+          disabled={!isEditing}
+          className="w-full p-2 border border-gray-300 rounded"
+        />
+      </div>
+
+      <div>
+        <label className="block font-medium">Pincode</label>
+        <input
+          name="pincode"
+          value={profile.pincode || ""}
           onChange={handleChange}
           disabled={!isEditing}
           className="w-full p-2 border border-gray-300 rounded"
@@ -161,7 +187,10 @@ const ProfileTab = () => {
           options={scrapTypeOptions}
           value={profile.scrap_types as { label: string; value: string }[]}
           onChange={(selected) =>
-            setProfile({ ...profile!, scrap_types: selected as { label: string; value: string }[] })
+            setProfile({
+              ...profile!,
+              scrap_types: selected as { label: string; value: string }[],
+            })
           }
         />
       </div>

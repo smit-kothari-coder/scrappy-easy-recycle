@@ -215,6 +215,8 @@ export type Database = {
           availability_hours: string | null
           available: boolean | null
           city: string
+          pincode: string | null
+          scrap_types: string | null
           created_at: string | null
           email: string
           id: string
@@ -229,6 +231,7 @@ export type Database = {
           availability_hours?: string | null
           available?: boolean | null
           city: string
+          pincode?: string | null
           created_at?: string | null
           email: string
           id: string
@@ -243,6 +246,7 @@ export type Database = {
           availability_hours?: string | null
           available?: boolean | null
           city?: string
+          pincode?: string | null
           created_at?: string | null
           email?: string
           id?: string
@@ -282,6 +286,7 @@ export type Database = {
       users: {
         Row: {
           address: string | null
+          pincode: string | null
           city: string
           created_at: string | null
           email: string
@@ -291,6 +296,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          pincode?: string | null
           city: string
           created_at?: string | null
           email: string
@@ -300,6 +306,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          pincode?: string | null
           city?: string
           created_at?: string | null
           email?: string

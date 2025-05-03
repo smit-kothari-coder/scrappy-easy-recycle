@@ -9,9 +9,10 @@ export type Profile = {
   address: string | null;
   city: string | null;
   created_at: string;
-  scrapType?: string[];      // Added
-  scrapKg?: number;          // Added
-  totalPoints?: number;      // Added
+  scrapType?: string[]; // Added
+  scrapKg?: number; // Added
+  totalPoints?: number; // Added
+  pincode?: string;
 };
 
 export type Points = {
@@ -28,8 +29,8 @@ export type Reward = {
   description: string | null;
   points_required: number;
   active: boolean;
-  image_url?: string;        // Added
-  created_at?: string;       // Added
+  image_url?: string; // Added
+  created_at?: string; // Added
 };
 
 export type RedeemedReward = {
@@ -37,13 +38,15 @@ export type RedeemedReward = {
   user_id: string;
   reward_id: string;
   created_at: string;
-  status?: 'Pending' | 'Completed' | 'Cancelled';  // Added
+  status?: "Pending" | "Completed" | "Cancelled"; // Added
 };
 
 export type Scrapper = {
   id: string;
   name: string;
   email: string;
+  address?: string;
+  pincode: number; // Added pincode property
   phone: string;
   city: string;
   vehicle_type: string | null;
@@ -53,14 +56,11 @@ export type Scrapper = {
   available: boolean;
   rating: number;
   created_at: string;
-  scrap_types: string[];     // Changed to always be array
-  average_rating?: number;   // Added
-  profile_image?: string;    // Added
-  registration_number: string | null; // Add vehicle_number field
-  scrap_prices?: { [key: string]: number
-   }; // Added scrap_prices property
-
-
+  scrap_types: string[]; // Changed to always be array
+  average_rating?: number;
+  profile_image?: string;
+  registration_number: string | null;
+  scrap_prices?: { [key: string]: number }; // Added scrap_prices property
 };
 
 export type Pickup = {
@@ -73,15 +73,22 @@ export type Pickup = {
   date: string;
   time_slot: string;
   price: number | null;
-  status: 'Requested' | 'Scheduled' | 'En Route' | 'Arrived' | 'Completed' | 'Rejected';
+  status:
+    | "Requested"
+    | "Scheduled"
+    | "En Route"
+    | "Arrived"
+    | "Completed"
+    | "Rejected";
   latitude: number | null;
   longitude: number | null;
   created_at: string;
+  pincode: number; // Added pincode property
   updated_at?: string;
-  points_awarded?: number;   // Added
-  rating?: number;           // Added
-  feedback?: string;         // Added
-  payment_status?: 'Pending' | 'Completed' | 'Failed';  // Added
+  points_awarded?: number; // Added
+  rating?: number; // Added
+  feedback?: string; // Added
+  payment_status?: "Pending" | "Completed" | "Failed"; // Added
 };
 
 export type BusinessLocation = {
@@ -92,9 +99,9 @@ export type BusinessLocation = {
   latitude: number;
   longitude: number;
   created_at?: string;
-  operating_hours?: string;  // Added
-  contact_number?: string;   // Added
-  accepted_materials?: string[];  // Added
+  operating_hours?: string; // Added
+  contact_number?: string; // Added
+  accepted_materials?: string[]; // Added
 };
 
 // Added new types
@@ -112,6 +119,7 @@ export type User = {
   phone?: string;
   address?: string;
   city?: string;
+  pincode: number; // Added pincode property
 };
 
 export type ScrapMaterial = {
@@ -136,7 +144,7 @@ export type PaymentTransaction = {
   id: string;
   pickup_id: string;
   amount: number;
-  status: 'Pending' | 'Completed' | 'Failed';
+  status: "Pending" | "Completed" | "Failed";
   payment_method?: string;
   transaction_id?: string;
   created_at: string;
@@ -147,7 +155,7 @@ export type Notification = {
   user_id: string;
   title: string;
   message: string;
-  type: 'pickup' | 'reward' | 'payment' | 'system';
+  type: "pickup" | "reward" | "payment" | "system";
   read: boolean;
   created_at: string;
   action_url?: string;
@@ -155,27 +163,33 @@ export type Notification = {
 
 // Added type guards
 export const isUser = (user: any): user is User => {
-  return user 
-    && typeof user.id === 'string'
-    && typeof user.email === 'string'
-    && Array.isArray(user.scrapType)
-    && typeof user.scrapKg === 'number';
+  return (
+    user &&
+    typeof user.id === "string" &&
+    typeof user.email === "string" &&
+    Array.isArray(user.scrapType) &&
+    typeof user.scrapKg === "number"
+  );
 };
 
 export const isPickup = (pickup: any): pickup is Pickup => {
-  return pickup
-    && typeof pickup.id === 'string'
-    && typeof pickup.user_id === 'string'
-    && Array.isArray(pickup.type)
-    && typeof pickup.weight === 'number';
+  return (
+    pickup &&
+    typeof pickup.id === "string" &&
+    typeof pickup.user_id === "string" &&
+    Array.isArray(pickup.type) &&
+    typeof pickup.weight === "number"
+  );
 };
 
 export const isScrapper = (scrapper: any): scrapper is Scrapper => {
-  return scrapper
-    && typeof scrapper.id === 'string'
-    && typeof scrapper.name === 'string'
-    && typeof scrapper.email === 'string'
-    && Array.isArray(scrapper.scrap_types);
+  return (
+    scrapper &&
+    typeof scrapper.id === "string" &&
+    typeof scrapper.name === "string" &&
+    typeof scrapper.email === "string" &&
+    Array.isArray(scrapper.scrap_types)
+  );
 };
 
 export interface AppUser {
@@ -183,8 +197,18 @@ export interface AppUser {
   name: string;
   email: string;
   scrapKg: number;
+  address?: string;
+  pincode?: string;
+
   scrapType: ScrapType[];
-};
+}
 
-export type ScrapType = 'paper' | 'plastic' | 'metal' | 'glass' | 'rubber' | 'textiles' | 'organic' | 'eWaste';
-
+export type ScrapType =
+  | "paper"
+  | "plastic"
+  | "metal"
+  | "glass"
+  | "rubber"
+  | "textiles"
+  | "organic"
+  | "eWaste";
