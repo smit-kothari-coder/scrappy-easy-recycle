@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { useSupabase } from '@/hooks/useSupabase';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from "@/integrations/supabase/client";
 
 const PickupSummary = () => {
   const location = useLocation();
@@ -26,15 +27,31 @@ const PickupSummary = () => {
     }
   }, [pickupData]);
 
-  const fetchScrappers = async () => {
+ /* const fetchScrappers = async () => {
     try {
       // Replace with Supabase fetch logic
       const dummyScrappers = [
-        { id: 1, name: "Scrapper A", estimatedPrice: 120 },
+        { id: 1, name: "Test A", estimatedPrice: 120 },
         { id: 2, name: "Scrapper B", estimatedPrice: 110 },
         { id: 3, name: "Scrapper C", estimatedPrice: 100 },
       ];
       setScrappers(dummyScrappers);
+    } catch (err) {
+      toast.error("Failed to fetch scrappers");
+    }
+  };*/
+
+  const fetchScrappers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('scrappers') // Replace 'Scrappers' with your actual table name
+        .select('id, name, scrap_prices'); // Adjust columns as needed
+  
+      if (error) {
+        throw error;
+      }
+  
+      setScrappers(data || []);
     } catch (err) {
       toast.error("Failed to fetch scrappers");
     }

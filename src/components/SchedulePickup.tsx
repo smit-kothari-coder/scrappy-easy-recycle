@@ -163,7 +163,7 @@ const SchedulePickup = () => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="font-medium">
-                    Waste Weight (kg)
+                    Approximate Weight (kg)
                   </FormLabel>
                   <FormControl>
                     <Input
@@ -184,10 +184,10 @@ const SchedulePickup = () => {
               name="streetAddress"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-medium">Street Address</FormLabel>
+                  <FormLabel className="font-medium"> Address</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Enter street address"
+                      placeholder="Enter address"
                       {...field}
                       className="bg-gray-50 border-gray-200"
                     />
