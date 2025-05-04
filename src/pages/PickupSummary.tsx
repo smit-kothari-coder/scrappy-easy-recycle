@@ -1,11 +1,11 @@
-import { useLocation, useNavigate } from 'react-router-dom';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
-import { format } from 'date-fns';
-import { useSupabase } from '@/hooks/useSupabase';
-import { useAuth } from '@/hooks/useAuth';
+import { useLocation, useNavigate } from "react-router-dom";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { format } from "date-fns";
+import { useSupabase } from "@/hooks/useSupabase";
+import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
 const PickupSummary = () => {
@@ -18,40 +18,46 @@ const PickupSummary = () => {
   const [scrappers, setScrappers] = useState([]);
   const [selectedScrapper, setSelectedScrapper] = useState(null);
 
+  const formatScrapPrices = (scrapper) => {
+    if (!pickupData?.type || !scrapper?.scrap_prices) return "No pricing data";
+
+    return pickupData.type
+      .map((type) => `${type}: ₹${scrapper.scrap_prices[type] ?? "N/A"}`)
+      .join(", ");
+  };
+
   useEffect(() => {
     if (!pickupData) {
       toast.error("Missing pickup data");
-      navigate('/');
+      navigate("/");
     } else {
       fetchScrappers();
     }
   }, [pickupData]);
 
- /* const fetchScrappers = async () => {
-    try {
-      // Replace with Supabase fetch logic
-      const dummyScrappers = [
-        { id: 1, name: "Test A", estimatedPrice: 120 },
-        { id: 2, name: "Scrapper B", estimatedPrice: 110 },
-        { id: 3, name: "Scrapper C", estimatedPrice: 100 },
-      ];
-      setScrappers(dummyScrappers);
-    } catch (err) {
-      toast.error("Failed to fetch scrappers");
-    }
-  };*/
-
   const fetchScrappers = async () => {
     try {
       const { data, error } = await supabase
-        .from('scrappers') // Replace 'Scrappers' with your actual table name
-        .select('id, name, scrap_prices'); // Adjust columns as needed
-  
+        .from("scrappers")
+        .select("id, name, scrap_prices, scrap_types"); // Make sure scrap_types is included
+
       if (error) {
         throw error;
       }
-  
-      setScrappers(data || []);
+
+      const filteredScrappers = (data || []).filter((scrapper) => {
+        // Convert comma string to array if needed
+        const scrapperTypes = Array.isArray(scrapper.scrap_types)
+          ? scrapper.scrap_types
+          : scrapper.scrap_types?.split(",").map((t) => t.trim()) || [];
+
+        // Check if at least one type matches
+        return pickupData.type.some((userType) =>
+          scrapperTypes.includes(userType)
+        );
+      });
+
+      setScrappers(filteredScrappers);
     } catch (err) {
       toast.error("Failed to fetch scrappers");
     }
@@ -76,7 +82,7 @@ const PickupSummary = () => {
         address: pickupData.streetAddress,
         date: format(new Date(pickupData.date), "yyyy-MM-dd"),
         time_slot: timeSlotMap[pickupData.time_slot],
-        type: pickupData.type.join(','),
+        type: pickupData.type.join(","),
         pincode: pickupData.pincode,
         latitude: 0, // Replace with real lat/long
         longitude: 0,
@@ -96,11 +102,21 @@ const PickupSummary = () => {
 
       <Card className="mb-6">
         <CardContent className="space-y-2 pt-4">
-          <p><strong>Address:</strong> {pickupData.fullAddress}</p>
-          <p><strong>Date:</strong> {pickupData.formattedDate}</p>
-          <p><strong>Time Slot:</strong> {pickupData.time_slot}</p>
-          <p><strong>Waste Types:</strong> {pickupData.type.join(', ')}</p>
-          <p><strong>Weight:</strong> {pickupData.weight} kg</p>
+          <p>
+            <strong>Address:</strong> {pickupData.fullAddress}
+          </p>
+          <p>
+            <strong>Date:</strong> {pickupData.formattedDate}
+          </p>
+          <p>
+            <strong>Time Slot:</strong> {pickupData.time_slot}
+          </p>
+          <p>
+            <strong>Waste Types:</strong> {pickupData.type.join(", ")}
+          </p>
+          <p>
+            <strong>Weight:</strong> {pickupData.weight} kg
+          </p>
         </CardContent>
         <div className="p-4">
           <Button onClick={() => navigate(-1)}>Edit</Button>
@@ -114,8 +130,8 @@ const PickupSummary = () => {
             key={scrapper.id}
             className={`block border rounded-lg p-4 cursor-pointer ${
               selectedScrapper?.id === scrapper.id
-                ? 'border-scrap-green bg-scrap-green/10'
-                : 'border-gray-200'
+                ? "border-scrap-green bg-scrap-green/10"
+                : "border-gray-200"
             }`}
           >
             <input
@@ -126,7 +142,18 @@ const PickupSummary = () => {
               checked={selectedScrapper?.id === scrapper.id}
               onChange={() => setSelectedScrapper(scrapper)}
             />
-            <span className="font-medium">{scrapper.name}</span> — ₹{scrapper.estimatedPrice}
+            <div className="space-y-1">
+              <span className="font-medium text-lg">{scrapper.name}</span>
+              <p className="text-sm text-gray-600">
+                <strong>Scrap Types Collected:</strong>{" "}
+                {Array.isArray(scrapper.scrap_types)
+                  ? scrapper.scrap_types.join(", ")
+                  : scrapper.scrap_types || "N/A"}
+              </p>
+              <p className="text-sm text-gray-600">
+                <strong>Prices:</strong> {formatScrapPrices(scrapper)}
+              </p>
+            </div>
           </label>
         ))}
       </div>

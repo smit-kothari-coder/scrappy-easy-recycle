@@ -67,6 +67,9 @@ export type Pickup = {
   id: string;
   user_id: string;
   scrapper_id: string | null;
+  scrapper?: {
+    name: string;
+  };
   weight: number;
   type: string[];
   address: string;

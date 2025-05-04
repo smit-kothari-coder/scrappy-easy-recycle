@@ -306,23 +306,29 @@ export const useSupabase = () => {
     }
   }, []);
 
-  const getPickupHistory = useCallback(async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from("pickups")
-        .select("*")
-        .eq("user_id", userId)
-        .order("date", { ascending: false });
-
-      if (error)
-        throw new Error(`Error fetching pickup history: ${error.message}`);
-      return data;
-    } catch (error) {
-      console.error("Error fetching pickup history:", error);
-      throw error;
+  const getPickupHistory = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('pickups')
+      .select(`
+        id,
+        date,
+        weight,
+        type,
+        status,
+        scrappers (
+          name
+        )
+      `)
+      .eq('user_id', userId)
+      .order('date', { ascending: false });
+  
+    if (error) {
+      throw new Error(`Error fetching pickup history: ${error.message}`);
     }
-  }, []);
-
+  
+    return data;
+  };
+  
   const listenToPickupUpdates = useCallback(
     (userId: string, callback: (data: Pickup) => void) => {
       const channel = supabase

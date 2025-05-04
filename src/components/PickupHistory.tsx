@@ -17,7 +17,24 @@ const PickupHistory = () => {
       // Fetch initial pickup history
       const fetchHistory = async () => {
         const data = await getPickupHistory(user.id);
-        setHistory(data);
+        const formattedData = data.map((item: any) => ({
+          id: item.id,
+          date: item.date,
+          weight: item.weight,
+          type: item.type,
+          status: item.status,
+          scrapper: item.scrappers?.[0] || null,
+          user_id: item.user_id || null,
+          scrapper_id: item.scrapper_id || null,
+          address: item.address || '',
+          time_slot: item.time_slot || '',
+          price: item.price || 0,
+          latitude: item.latitude || null,
+          longitude: item.longitude || null,
+          created_at: item.created_at || '',
+          pincode: item.pincode || '',
+        }));
+        setHistory(formattedData);
         setLoading(false);
       };
 
@@ -47,7 +64,7 @@ const PickupHistory = () => {
               <TableHead>Scrapper</TableHead>
               <TableHead>Weight (kg)</TableHead>
               <TableHead>Type</TableHead>
-              <TableHead>Price (₹)</TableHead>
+              {/* <TableHead>Price (₹)</TableHead> */}
               <TableHead>Status</TableHead>
             </TableRow>
           </TableHeader>
@@ -55,10 +72,10 @@ const PickupHistory = () => {
             {history.map((pickup) => (
               <TableRow key={pickup.id}>
                 <TableCell>{pickup.date}</TableCell>
-                <TableCell>{pickup.scrapper_id || 'N/A'}</TableCell>
+                <TableCell>{pickup.scrapper?.name || 'N/A'}</TableCell>
                 <TableCell>{pickup.weight}</TableCell>
                 <TableCell>{pickup.type}</TableCell>
-                <TableCell>{pickup.price}</TableCell>
+                {/* <TableCell>{pickup.price}</TableCell> */}
                 <TableCell>
                   <span className={`inline-block px-2 py-1 text-xs font-semibold rounded-full ${
                     pickup.status === 'Completed' ? 'text-green-800 bg-green-100' : 'text-blue-800 bg-blue-100'
