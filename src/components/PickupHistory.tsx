@@ -23,7 +23,7 @@ const PickupHistory = () => {
           weight: item.weight,
           type: item.type,
           status: item.status,
-          scrapper: item.scrappers?.[0] || null,
+          scrapper: item.scrappers || null,
           user_id: item.user_id || null,
           scrapper_id: item.scrapper_id || null,
           address: item.address || '',
@@ -72,7 +72,7 @@ const PickupHistory = () => {
             {history.map((pickup) => (
               <TableRow key={pickup.id}>
                 <TableCell>{pickup.date}</TableCell>
-                <TableCell>{pickup.scrapper?.name || 'N/A'}</TableCell>
+                <TableCell>{pickup.scrapper?.name || 'XYZ'}</TableCell>
                 <TableCell>{pickup.weight}</TableCell>
                 <TableCell>{pickup.type}</TableCell>
                 {/* <TableCell>{pickup.price}</TableCell> */}
