@@ -30,24 +30,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
 
         if (session?.user) {
-          setTimeout(async () => {
-            try {
-              const { data: scrapper } = await supabase
-                .from('scrappers')
-                .select('id')
-                .eq('email', session.user.email)
-                .single();
-
-              if (scrapper) {
-                setUserType('scrapper');
-              } else {
-                setUserType('user');
-              }
-            } catch (error) {
-              console.error('Error determining user type:', error);
-              setUserType('user');
-            }
-          }, 0);
+          determineUserType(session.user.email);
         } else {
           setUserType(null);
         }
@@ -60,24 +43,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(false);
 
       if (session?.user) {
-        setTimeout(async () => {
-          try {
-            const { data: scrapper } = await supabase
-              .from('scrappers')
-              .select('id')
-              .eq('email', session.user.email)
-              .single();
-
-            if (scrapper) {
-              setUserType('scrapper');
-            } else {
-              setUserType('user');
-            }
-          } catch (error) {
-            console.error('Error determining user type:', error);
-            setUserType('user');
-          }
-        }, 0);
+        determineUserType(session.user.email);
       }
     });
 
@@ -85,6 +51,50 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       subscription.unsubscribe();
     };
   }, []);
+
+  const determineUserType = async (email: string) => {
+    try {
+      const { data: scrapper } = await supabase
+        .from('scrappers')
+        .select('id')
+        .eq('email', email)
+        .single();
+
+      if (scrapper) {
+        setUserType('scrapper');
+      } else {
+        setUserType('user');
+      }
+    } catch (error) {
+      console.error('Error determining user type:', error);
+      setUserType('user');
+    }
+  };
+
+  const isUserSignUp = async (userId: string, userData: any) => {
+    try {
+      // Insert user data into the `users` table
+      const { error } = await supabase.from('user').insert({
+        id: userId,
+        name: userData.name,
+        email: userData.email,
+        phone: userData.phone,
+        city: userData.city,
+        pincode: userData.pincode,
+        address: userData.address, // Add address if applicable
+      });
+
+      if (error) {
+        console.error('Error inserting user data into users table:', error.message);
+        throw error;
+      }
+
+      console.log('User data successfully inserted into users table.');
+    } catch (error: any) {
+      console.error('Error in isUserSignUp:', error.message);
+      throw error;
+    }
+  };
 
   const signUp = async (
     email: string,
@@ -95,6 +105,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setLoading(true);
 
+      // Sign up the user with Supabase authentication
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -103,32 +114,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) throw error;
       if (!data.user) throw new Error('User was not created');
 
+      const userId = data.user.id;
+
       if (isScrapperSignUp) {
-        const { error: insertError } = await supabase
-          .from('scrappers')
-          .insert({
-            id: data.user.id,
-            name: userData.name,
-            email: userData.email,
-            phone: userData.phone,
-            city: userData.city,
-            pincode: userData.pincode,
-            vehicle_type: userData.vehicleType,
-            registration_number: userData.registrationNumber,
-            availability_hours: userData.workingHours,
-            service_area: userData.serviceArea,
-            scrap_types: userData.scrapTypes,
-            available: true,
-            rating: 0
-          });
+        // Insert scrapper data into the `scrappers` table
+        const { error: insertError } = await supabase.from('scrappers').insert({
+          id: userId,
+          name: userData.name,
+          email: userData.email,
+          phone: userData.phone,
+          city: userData.city,
+          pincode: userData.pincode,
+          vehicle_type: userData.vehicleType,
+          registration_number: userData.registrationNumber,
+          availability_hours: userData.workingHours,
+          service_area: userData.serviceArea,
+          scrap_types: userData.scrapTypes,
+          available: true,
+          rating: 0,
+        });
 
         if (insertError) throw insertError;
 
         setUserType('scrapper');
         toast.success('Scrapper account created!');
         navigate('/scrapper-dashboard');
-      }
+      } else {
+        // Call isUserSignUp to insert user data into the `users` table
+        await isUserSignUp(userId, userData);
 
+        setUserType('user');
+        toast.success('User account created!');
+        navigate('/user-dashboard');
+      }
     } catch (error: any) {
       console.error('Error signing up:', error);
       toast.error(error.message || 'Error signing up');
@@ -143,7 +161,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (isPhoneLogin) {
         // Handle phone login (OTP)
-        const { data, error } = await supabase.auth.signInWithOtp({
+        const { error } = await supabase.auth.signInWithOtp({
           phone: emailOrPhone,
         });
 
@@ -152,32 +170,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       } else {
         // Handle email login (password)
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { error } = await supabase.auth.signInWithPassword({
           email: emailOrPhone,
           password: passwordOrOtp,
         });
 
         if (error) throw error;
 
-        try {
-          const { data: scrapper } = await supabase
-            .from('scrappers')
-            .select('id')
-            .eq('email', emailOrPhone)
-            .single();
-
-          if (scrapper) {
-            setUserType('scrapper');
-            navigate('/scrapper-dashboard');
-            toast.success('Signed in as scrapper');
-          } else {
-            setUserType('user');
-            navigate('/user-dashboard');
-            toast.success('Signed in successfully');
-          }
-        } catch (error) {
-          console.error('Error determining user type:', error);
-          setUserType('user');
+        // Determine user type and navigate to the appropriate dashboard
+        await determineUserType(emailOrPhone);
+        if (userType === 'scrapper') {
+          navigate('/scrapper-dashboard');
+          toast.success('Signed in as scrapper');
+        } else {
           navigate('/user-dashboard');
           toast.success('Signed in successfully');
         }
@@ -216,7 +221,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         signUp,
         signIn,
         signOut,
-        userType
+        userType,
       }}
     >
       {children}
