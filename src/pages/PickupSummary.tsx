@@ -37,28 +37,29 @@ const PickupSummary = () => {
 
   const fetchScrappers = async () => {
     try {
+      // Fetch scrappers from the database filtered by pincode
       const { data, error } = await supabase
         .from("scrappers")
-        .select("id, name, scrap_prices, scrap_types"); // Make sure scrap_types is included
-
+        .select("id, name, scrap_prices, scrap_types, pincode") // Include pincode in the query
+        .eq("pincode", pickupData.pincode); // Filter by the user's pincode
+  
       if (error) {
         throw error;
       }
-
+  
+      // Filter scrappers further by matching scrap types
       const filteredScrappers = (data || []).filter((scrapper) => {
-        // Convert comma string to array if needed
         const scrapperTypes = Array.isArray(scrapper.scrap_types)
           ? scrapper.scrap_types
           : scrapper.scrap_types?.split(",").map((t) => t.trim()) || [];
-
-        // Check if at least one type matches
-        return pickupData.type.some((userType) =>
-          scrapperTypes.includes(userType)
-        );
+  
+        // Check if at least one scrap type matches the user's selected types
+        return pickupData.type.some((userType) => scrapperTypes.includes(userType));
       });
-
+  
       setScrappers(filteredScrappers);
     } catch (err) {
+      console.error("Error fetching scrappers:", err);
       toast.error("Failed to fetch scrappers");
     }
   };
