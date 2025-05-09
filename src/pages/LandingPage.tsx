@@ -13,7 +13,7 @@ import {
   Box,
   Cpu,
   BookOpen,
-  Plus,
+  ListPlus,
 } from "lucide-react";
 import { useState } from "react";
 import SolutionFormModal from "../components/SolutionFormModal";
@@ -102,7 +102,7 @@ const LandingPage = () => {
             { icon: <Box />, label: "Cardboard" },
             { icon: <Cpu />, label: "Metal" },
             { icon: <BookOpen />, label: "Paper" },
-            { icon: <Plus />, label: "Many More" },
+            { icon: <ListPlus />, label: "Many More" },
           ].map(({ icon, label }, i) => (
             <div
               key={i}
