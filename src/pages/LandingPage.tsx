@@ -94,13 +94,14 @@ const LandingPage = () => {
         <h2 className="text-3xl font-bold text-gray-800 mb-6">
           What We Collect
         </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 max-w-5xl mx-auto px-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6 max-w-5xl mx-auto px-4">
           {[
             { icon: <Recycle />, label: "Plastic" },
             { icon: <Battery />, label: "E-Waste" },
             { icon: <Box />, label: "Cardboard" },
             { icon: <Cpu />, label: "Metal" },
             { icon: <BookOpen />, label: "Paper" },
+            { icon: <Box />, label: "Many More" },
           ].map(({ icon, label }, i) => (
             <div
               key={i}
