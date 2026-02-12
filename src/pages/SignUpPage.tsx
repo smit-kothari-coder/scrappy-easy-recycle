@@ -27,16 +27,8 @@ import { useAuth } from "@/hooks/useAuth";
 import WasteTypeSelector from "@/components/WasteTypeSelector";
 
 const indianCities = [
-  "Delhi",
   "Mumbai",
-  "Kolkata",
-  "Chennai",
-  "Bangalore",
-  "Hyderabad",
-  "Ahmedabad",
   "Pune",
-  "Jaipur",
-  "Lucknow",
 ];
 
 const vehicleTypes = [

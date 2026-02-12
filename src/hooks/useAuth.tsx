@@ -106,10 +106,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(true);
 
       // Sign up the user with Supabase authentication
+      const cleanEmail = email.trim();
+      const cleanPassword = password.trim();
+console.log("EMAIL:", JSON.stringify(email));
+
       const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
+        email: cleanEmail,
+        password: cleanPassword,
       });
+
 
       if (error) throw error;
       if (!data.user) throw new Error('User was not created');
