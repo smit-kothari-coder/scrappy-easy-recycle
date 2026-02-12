@@ -148,13 +148,11 @@ const ContactPage = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
           <div className="scrap-card">
             <h2 className="text-xl font-semibold text-gray-800 mb-2">Email Us</h2>
-            <p className="text-gray-600">support@scrapeasy.com</p>
-            <p className="text-gray-600">business@scrapeasy.com</p>
+            <p className="text-gray-600">smit.kothari@aissmsioit.org</p>
           </div>
           
           <div className="scrap-card">
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">Call Us</h2>
-            <p className="text-gray-600">Customer Support: +91-123-456-7890</p>
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">Working Hours</h2>
             <p className="text-gray-600">Weekdays: 9 AM - 8 PM IST</p>
           </div>
         </div>
